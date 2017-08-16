@@ -2,7 +2,7 @@
 YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2
 
 ## Download und Installation inklusive aller Module und Bibliotheken
-yamuplay                    GPL v3
+yamuplay (GPL v3)
 ```shell
 cd /home/pi
 git clone https://github.com/schlizbaeda/yamuplay.git
@@ -10,7 +10,7 @@ cd yamuplay
 chmod 755 yamuplay.py
 ```
 
-python-omxplayer-wrapper    LPGL v3
+python-omxplayer-wrapper (LPGL v3)
 ```shell
 cd /home/pi/yamuplay
 git clone https://github.com/willprice/python-omxplayer-wrapper.git
@@ -18,13 +18,13 @@ cd python-omxplayer-wrapper
 sudo python3 setup.py install
 ```
 
-python3-dbus                MIT
+python3-dbus (MIT)
 ```shell
 cd /home/pi/yamuplay
 sudo apt-get install python3-dbus
 ```
 
-pyudev v0.21.0              LPGL v2.1
+pyudev v0.21.0 (LPGL v2.1)
 ```shell
 cd /home/pi/yamuplay
 git clone https://github.com/pyudev/pyudev.git
@@ -32,7 +32,7 @@ cd pyudev
 sudo python3 setup.py install
 ```
 
-python-magic                MIT
+python-magic (MIT)
 ```shell
 cd /home/pi/yamuplay
 git clone https://github.com/ahupp/python-magic.git
