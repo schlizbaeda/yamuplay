@@ -1,7 +1,7 @@
 # yamuplay
 YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2
 
-## Download inklusive aller Module und Bibliotheken
+## Download und Installation inklusive aller Module und Bibliotheken
 yamuplay                    GPL v3
 ```shell
 cd /home/pi
