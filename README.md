@@ -124,3 +124,4 @@ Ich plane, folgende Punkte in einer künftigen Version einzubauen:
 * omxplayer-eigenes Fading beseitigen (falls möglich)
 * Erkennung anderer USB-Gerätetypen (z.B. Smartphones) , nicht nur klassische Speichergeräte (mass storage device)
 * Einlesevorgang bei riesigen USB-Speichern optimieren (Hintergrundthread?)
+* Bilder (*.JPG, *.PNG etc.) in Form einer Diashow anzeigen
