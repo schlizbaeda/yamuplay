@@ -1,0 +1,120 @@
+% ------------------------------------------------------------------------------
+% FORMATVORLAGE DOKU/ BEDIENUNGSANLEITUNG
+% ------------------------------------------------------------------------------
+
+% DOKUMENTENKOPF ---------------------------------------------------------------
+%   Diese Vorlage basiert auf "scrreprt" aus dem koma-script.
+% ------------------------------------------------------------------------------
+\documentclass[
+    11pt,    % Schriftgröße
+    DIV10,
+    ngerman, % für Umlaute, Silbentrennung etc.
+    textgreek,
+    a4paper, % Papierformat
+    oneside, % einseitiges Dokument
+    titlepage, % es wird eine Titelseite verwendet
+    parskip=half, % Abstand zwischen Absätzen (halbe Zeile)
+    headings=normal, % Größe der Überschriften verkleinern
+    listof=totoc, % Verzeichnisse im Inhaltsverzeichnis aufführen
+    bibliography=totoc, % Literaturverzeichnis im Inhaltsverzeichnis aufführen
+    index=totoc, % Index im Inhaltsverzeichnis aufführen
+    captions=tableheading, % Beschriftung von Tabellen unterhalb ausgeben
+    final % Status des Dokuments (final/draft)
+]{scrreprt}
+
+% globale Definitionen -----------------------------------------------------------
+%   Informationen über das Dokument, wie z.B. Titel, Autor, Datum 
+%   werden in der Datei globale_Definitionen.tex definiert und können danach global
+%   verwendet werden.
+% ------------------------------------------------------------------------------
+\input{Layout/globale_Definitionen}
+
+% benötigte Packages -----------------------------------------------------------
+%   LaTeX-Packages, die benötigt werden, sind in die Datei Packages.tex
+%   "ausgelagert", um diese Vorlage möglichst übersichtlich zu halten.
+% ------------------------------------------------------------------------------
+\input{Layout/Packages}
+
+% Erstellung eines Index und Abkürzungsverzeichnisses aktivieren ---------------
+\makeindex
+\makenomenclature
+
+% Kopf- und Fußzeilen, Seitenränder etc. ---------------------------------------
+\input{Layout/Seitenstil}
+
+% eigene LaTeX-Befehle
+\include{Layout/Befehle}
+
+% DAS EIGENTLICHE DOKUMENT -----------------------------------------------------
+%   Der eigentliche Inhalt des Dokuments beginnt hier. Die einzelnen Seiten
+%   und Kapitel werden in eigene Dateien ausgelagert und hier nur inkludiert.
+% ------------------------------------------------------------------------------
+% ------------------------------------------------------------------------------
+\begin{document}
+
+% auch subsubsection nummerieren
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+% Seitennummerierung -----------------------------------------------------------
+%   Vor dem Hauptteil werden die Seiten in großen römischen Ziffern 
+%   nummeriert.
+% ------------------------------------------------------------------------------
+\pagenumbering{Roman}
+
+% Deckblatt und Abstract ohne Seitenzahl
+\cfoot{}
+\include{Layout/Deckblatt}
+\include{Layout/Abstract}
+\cfoot{- \pagemark ~-}
+
+\tableofcontents          % Inhaltsverzeichnis
+\listoffigures            % Abbildungsverzeichnis
+\listoftables             % Tabellenverzeichnis
+\renewcommand{\lstlistlistingname}{Verzeichnis der Listings}
+%\lstlistoflistings        % Listings-Verzeichnis
+
+%% Abkürzungsverzeichnis --------------------------------------------------------
+%\input{Kapitel/Glossar}
+%% für korrekte Überschrift in der Kopfzeile
+%\clearpage\markboth{\nomname}{\nomname} 
+%\printnomenclature
+%\label{sec:Glossar}
+
+
+% arabische Seitenzahlen im Hauptteil ------------------------------------------
+\clearpage
+\pagenumbering{arabic}
+
+
+% ##############################################################################
+% ----------   Die Inhaltskapitel werden inkludiert    -------------------------
+% ##############################################################################
+\input{Kapitel/Kapitel1}
+\input{Kapitel/Kapitel2}
+
+% ##############################################################################
+% ------------------------------------------------------------------------------
+% ##############################################################################
+
+
+% ANHANG -----------------------------------------------------------------------
+%   Die Inhalte des Anhangs werden analog zu den Kapiteln inkludiert.
+%   Dies geschieht in der Datei "Anhang.tex".
+% ------------------------------------------------------------------------------
+%\begin{appendix}
+%    \clearpage
+%    \pagenumbering{roman}
+%    \chapter{Anhang}
+%    \label{sec:Anhang}
+%    % Rand der Aufzählungen in Tabellen anpassen
+%    \setdefaultleftmargin{1em}{}{}{}{}{}
+%    \input{Kapitel/Anhang}
+%\end{appendix}
+
+% Index ------------------------------------------------------------------------
+%   Zum Erstellen eines Index, die folgende Zeile auskommentieren.
+% ------------------------------------------------------------------------------
+%\printindex
+
+\end{document}

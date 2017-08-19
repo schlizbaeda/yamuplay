@@ -1,0 +1,417 @@
+\chapter{Software \Bezeichnung}
+\label{cha:Software}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Installation von \Bezeichnung}
+{\Bezeichnung} wird von {\autor} unter {\github} unter 
+\url{https://github.com/schlizbaeda/yamuplay} zum Download bereitgestellt. 
+Das Softwarepaket besteht im Wesentlichen aus dem Python3-Script 
+\filenam{yamuplay.py} und einigen Zusatzdateien sowie dem {\LaTeX}-Quellcode
+dieser Dokumentation.\\
+Damit das Python3-Script auf dem {\RPi} lauffähig wird, müssen weitere 
+Python-Mo\-du\-le installiert werden, die ebenfalls auf {\github} verfügbar sind
+oder als Paket in Raspbian enthalten sind:
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lll}
+\textbf{Python-Modul} & \textbf{Lizenz} & \textbf{Quelle}\\
+python-omxplayer-wrapper & LGPL v3 & \scriptsize{\url{https://github.com/willprice/python-omxplayer-wrapper.git}}\\
+python3-dbus & MIT & \filenam{apt-get install python3-dbus}\\
+pyudev v0.21.0 & LGPL v2.1 & \url{https://github.com/pyudev/pyudev.git}\\
+python-magic & MIT & \url{https://github.com/ahupp/python-magic.git}\\
+\end{tabular}
+\vspace{0.25cm}
+\caption{Zusätzliche Python-Module für den Betrieb von {\Bezeichnung}}
+\end{table}
+%------------------------------------------------------------------------------%
+\subsection*{Installation}
+Auf einem {\RPi}, der mit dem Internet verbunden ist, kann die Installation in
+einem Terminalfenster durch Eingabe folgender Anweisungen durchgeführt werden:
+
+Programmpaket \textbf{\Bezeichnung}\\
+\verb|  cd /home/pi|\\
+\verb|  git clone https://github.com/schlizbaeda/yamuplay.git|\\
+\verb|  cd yamuplay|\\
+\verb|  chmod 755 yamuplay.py|
+
+Programmpaket \textbf{python-omxplayer-wrapper}\\
+\verb|  cd /home/pi/yamuplay|\\
+\verb|  git clone https://github.com/willprice/python-omxplayer-wrapper.git|\\
+\verb|  cd python-omxplayer-wrapper|\\
+\verb|  sudo python3 setup.py install|
+
+Programmpaket \textbf{python3-dbus}\\
+\verb|  cd /home/pi/yamuplay|\\
+\verb|  sudo apt-get install python3-dbus|
+
+Programmpaket \textbf{pyudev v0.21.0}\\
+\verb|  cd /home/pi/yamuplay|\\
+\verb|  git clone https://github.com/pyudev/pyudev.git|\\
+\verb|  cd pyudev|\\
+\verb|  sudo python3 setup.py install|
+
+Programmpaket \textbf{python-magic}\\
+\verb|  cd /home/pi/yamuplay|\\
+\verb|  git clone https://github.com/ahupp/python-magic.git|\\
+\verb|  cd python-magic|\\
+\verb|  sudo python3 setup.py install|
+
+\subsection*{Programmaufruf}
+Der Start von {\Bezeichnung} erfolgt über das Kommando\\
+\verb|  /home/pi/yamuplay/yamuplay.py|
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{yamuplay_aufruf.png}
+\caption{Erstmaliger Aufruf von \Bezeichnung}
+\label{fig:yamuplay_aufruf}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Beschreibung und Bedienung von \Bezeichnung}
+Die Software {\Bezeichnung} {\Version} ist kein eigener Mediaplayer, sondern 
+eine Bedieneroberfläche für den existierenden Kommandozeilen-Mediaplayer
+{\filenam{\omxplayer}, der in den meisten(?) Betriebssystem-Distributionen
+für den {\RPi} standardmäßig enthalten ist. Diese Oberfläche ist quasi eine
+"`Hülle"' -- oder auf englisch -- ein \textit{Wrapper} für {\filenam{\omxplayer}.
+Der Sinn für die Programmierung von {\Bezeichnung} lag \ua darin, eine Plattform
+unter \textbf{Python3} zu schaffen, mit der man relativ einfach Mediendateien
+(Musik und Videos) unter Zuhilfenahme von {\filenam{\omxplayer} abspielen
+kann. Da \filenam{\omxplayer} als eigener Prozess gestartet wird und die
+Kommunikation mit {\Bezeichnung} über \textbf{D-Bus} erfolgt, findet das
+Abspielen aus der Sicht des übergestülpten Python-Scripts im Hintergrund
+statt; in Python können währenddessen andere Aufgaben erledigt werden. Ein
+weiterer Vorteil liegt darin, dass \filenam{\omxplayer} hauptsächlich den
+GPU-Teil des SoC \textit{Broadcom 283x} auf dem {\RPi} beansprucht und somit 
+den CPU-Teil kaum belastet. Die CPU-Last beim Betrieb von {\Bezeichnung} liegt 
+auf ei\-nem {\RPi} 1 mit dem Broadcom-SoC 2835 bei ca. 25\%-35\%, es bleiben 
+genügend CPU-Res\-sour\-cen frei.\\
+Nachteilig ist jedoch, dass ALSA aufgrund der großen Hardwarenähe von
+\filenam{\omxplayer} nicht eingebunden ist und somit wirkungslos bleibt.
+Daher funktioniert weder der ALSA-Mixer von Raspbian, noch kann eine Soundkarte
+wie Hifiberry DAC+ eingesetzt werden. Die Audioausgabe kann nur über HDMI
+oder den Analoganschluss des {\RPi} erfolgen, eine Laustärkeregelung muss am
+Audioverstärker vorgenommen werden!
+
+%------------------------------------------------------------------------------%
+\subsection{Bedienkonzept}
+Es gibt bereits genügend kompliziert zu bedienende Mediaplayer vor allem
+hinsichtlich der Erstellung, Änderung und Verwaltung von Playlists. Bereits
+in Kapitel \ref{sec:Kurzbeschreibung} wurde die Problematik des
+Music Player Daemons angedeutet, insbesondere wenn Änderungen in der Liste der
+abzuspielenden Stücke \textit{schnell} vorgenommen werden sollen/müssen. 
+Vielmehr ist in solchen Fällen eine intuitive Bedieneroberfläche erforderlich.
+{\Bezeichnung} ist ein Versuch in diese Richtung, aber auch hier könnte noch 
+viel getan werden, das will ich gar nicht abstreiten. Weitere geplante 
+Verbesserungen dazu für künftige Programmversionen sind in Kapitel 
+\ref{sect:Erweiterungen} aufgeführt.
+
+
+%------------------------------------------------------------------------------%
+\subsection{Aufbau der GUI}
+Das Hauptfenster von {\Bezeichnung} ist zweigeteilt, siehe Abbildung
+\ref{fig:yamuplay_controls}. Die wichtigsten Steuerelemente zur Bedienung von 
+{\Bezeichnung} befinden sich auf der grafischen Oberfläche und können direkt 
+durch Anklicken bedient werden.
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{yamuplay_controls.png}
+\caption{Steuerelemente in der Benutzeroberfläche von \Bezeichnung}
+\label{fig:yamuplay_controls}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{ll}
+\textbf{(1)} & Hauptmenü\\
+\textbf{(2)} & an einen CD-Spieler angelehnte Schaltflächen\\
+\textbf{(3)} & Fortschrittsbalken für die laufende Mediendatei -- \textbf{derzeit noch inaktiv}\\
+\textbf{(4)} & Einstellung für den Alphawert (Transparenz) von angezeigten Videos\\
+\textbf{(5)} & Titelsuche\\
+\textbf{(6)} & Anzeige der Dateien auf den angesteckten USB-Laufwerken\\
+\textbf{(7)} & Playlist\\
+\textbf{(8)} & Steuerelemente zum Löschen oder Verschieben von Elementen der Playlist\\
+\end{tabular}
+\vspace{0.25cm}
+\caption{Steuerelemente in der Benutzeroberfläche von \Bezeichnung}
+\end{table}
+In der linken Hälfte werden alle auf den
+angeschlossenen USB-Laufwerken enthaltenen Dateien und Verzeichnisse in einer
+hierarchischen Baumstruktur angezeigt, gewöhnliche Dateien in Normalschrift und
+Verzeichnisse in fetter Schrift. Ein Doppelklick auf ein Verzeichnis öffnet oder
+schließt es, eine gewöhnliche Datei wird der Playlist hinzugefügt. Mehrmaliges
+Hinzufügen der gleichen Datei zur Playlist ist natürlich möglich. {\Bezeichnung}
+kann derzeit jedoch noch nicht unterscheiden, ob es sich bei der gewählten Datei
+um eine abspielbare Mediendatei oder um einen anderen Dateityp (\zB eine
+Textdatei) handelt.\\ 
+Im oberen Bereich befinden sich Steuerelemente zur Dateisuche. Die Suche
+berücksichtigt derzeit nur die \textbf{Dateinamen}, nicht die Metadaten
+(\zB ID3-Tags) der Mediendateien. Dies würde ja eine Datenbank erfordern, auf
+die aus Performancegründen bewusst verzichtet wurde. \\
+Wird ein USB-Laufwerk entfernt oder ein weiteres angeschlossen, so wird die
+Baumstruktur entsprechend aktualisiert. Dateieinträge in der Playlist bleiben
+davon unangetastet!
+
+Der rechte Teil enthält oben die Schaltflächen \textit{Play/Pause}, 
+\textit{seek}, \textit{prev}, \textit{next} und \textit{Stop}, die den Tasten 
+eines CD-Spielers nachempfunden sind und (hoffentlich) keiner Erklärung 
+bedürfen \smiley{smile} 
+Direkt darunter ist ein derzeit noch inaktiver Fortschrittsbalken, der in 
+folgenden Programmversionen die aktuelle Position des laufenden Stücks anzeigen
+und auch ein Verschieben ermöglichen soll.\\
+Neben den CD-Schaltflächen befindet sich ein Eingabefeld für die Transparenz 
+(den sogenannten alpha-Wert) von Videos, die zwischen 0 (vollständig transparent,
+\dahe unsichtbar) und 255 (vollständig deckend) liegen kann. Grundsätzlich 
+reagiert der Desktop auch bei deckender Anzeige von Videos auf Maus- \bzw 
+Touchereignisse ganz normal, die Eingabe muss allerdings "`blind"' erfolgen. 
+Der Standardwert von 120 für die Transparenz lässt den Desktop des {\RPi} und 
+{\Bezeichnung} noch leicht durchscheinen, so dass eine optische Bedienung 
+möglich ist.
+Der untere Teil wird vollständig von der Playlist ausgefüllt, in der die 
+aktivierten Mediendateien angezeigt werden. Am rechten Rand befinden sich 
+Schaltflächen, um einzelne Dateien in der Liste zu verschieben oder wieder 
+ganz aus der Liste zu entfernen. Ein Doppelklick auf einen Titel in der Playlist 
+springt sofort dorthin und spielt diesen Titel ab.\\
+
+
+%------------------------------------------------------------------------------%
+\subsection{Menü}
+DropDown-Menü \textbf{Datei}
+\begin{itemize}
+\item{\textbf{Datei$\rightarrow$Playlist öffnen}\\
+      Laden einer gespeicherten Playlist:\\
+      Es wird der Standarddialog des Betriebssystems zur Dateiauswahl angezeigt,
+      mit dem der Dateiname ausgewählt werden kann. Das Dateiformat ist 
+      \Code{m3u}, eine Textdatei, in der jede Zeile eine Mediendatei enthält.
+      \begin{bclogo}[logo = \bclampe, noborder = true]{Hinweis}
+      Die bestehende Playlist in {\Bezeichnung} wird dabei nicht gelöscht, sondern
+      die in der Play\-list-Da\-tei enthaltenen Mediendateien werden hinten 
+      angehängt.
+      \end{bclogo}}
+\item{\textbf{Datei$\rightarrow$Playlist speichern}\\
+      Speichern der aktuellen Playlist:\\
+      Es wird der Standarddialog des Betriebssystems zur Dateiauswahl angezeigt,
+      mit dem der Dateiname der \Code{m3u}-Da\-tei ausgewählt werden kann. Es
+      werden alle Elemente der aktuellen Playlist von {\Bezeichnung} 
+      abgespeichert.}
+\item{\textbf{Datei$\rightarrow$Beenden}\\
+      {\Bezeichnung} verlassen}
+\end{itemize}
+
+\newpage
+DropDown-Menü \textbf{Ansicht}
+\begin{bclogo}[logo = \bclampe, noborder = true]{Hinweis}
+Dieses Menü beinhaltet Punkte zur Steuereung der Videodarstellung. Für reine
+Musikdateien wird es nicht benötigt.
+\end{bclogo}
+\begin{itemize}
+\item{\textbf{Ansicht$\rightarrow$Vollbild}\\
+      Wechsel zwischen der Anzeige eines Videos als Vollbild oder in einem 
+      Fenster}
+\item{\textbf{Ansicht$\rightarrow$AspectMode}\\
+      Einstellung der Darstellungsanpassung von Videos mit den drei Modes
+      \textit{letterbox}, \textit{fill} und \textit{stretch}:\\
+      \textit{letterbox:}\\
+      Vollständige Skalierung in das Videofenster ohne Verzerrung. Es entstehen
+      Ränder an der zu großen Seite.\\
+      \textit{fill:}\\
+      Skalierung in das Videofenster auf die kleinere Kante. Zu große Bereiche 
+      werden abgeschnitten und sind unsichtbar.\\
+      \textit{stretch:}\\
+      Anpassung an die Fenstergröße mit Verzerrung}
+\item{\textbf{Ansicht$\rightarrow$Hintergrundfarbe}\\
+      Über den Standarddialog "`Farbauswahl"' des Betriebssystems kann eine
+      Hintergrundfarbe für das Videofenster gewählt werden. Bei alpha-Wer\-ten
+      kleiner als 255 schimmert die Hintergrundfarbe anteilig durch das Video.
+      Damit können nette(?) Effekte erzeugt werden \smiley{lol}}
+\item{\textbf{Ansicht$\rightarrow$Videogröße automatisch anpassen}\\
+      Normalerweise wird die Fenstergröße bei Neustart einer Videodatei auf die
+      Originalgröße des Videos angepasst und mittig dargestellt. Da dies aber 
+      auch unerwünscht sein kann, werden alle Videos an die vom Anwender 
+      eingestellte Größe unter Berücksichtigung des "`Aspect Mode"' angepasst.}
+\end{itemize}
+
+DropDown-Menü \textbf{Hilfe}
+\begin{itemize}
+\item{\textbf{Hilfe$\rightarrow$Info}\\
+      Anzeige einer sogenannten "`Aboutbox"', in der Informationen über die 
+      Software und die Lizenz von {\Bezeichnung} angezeigt werden (siehe 
+      Abbildung \ref{fig:yamuplay_info})}
+\end{itemize}
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{yamuplay_info.png}
+\caption{Aboutbox von \Bezeichnung}
+\label{fig:yamuplay_info}
+\end{figure}
+
+
+\newpage
+%------------------------------------------------------------------------------%
+\subsection{Bedienung über die Tastatur}
+Die Bedienung von {\Bezeichnung} ist weitestgehend auch über die Tastatur 
+möglich. Die Taste \button{TAB} ermöglicht (wie bei den meisten Programmen mit 
+einer GUI) das Wechseln des aktiven Steuerelementes. In der Playlist und im 
+Tree\-view-Steu\-er\-e\-le\-ment und kann mit den Cursortasten eine Datei gewählt 
+werden. Ein Directory kann dabei mit \button{Cursor links} und \button{Cursor 
+rechts} auf- oder zugeklappt werden.
+
+Ferner sind einige Funktionstaten wir folgt belegt:\\
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{ll}
+\button{F1}  & Anzeige der Aboutbox (Menüpunkt Hilfe-->Info)\\
+\button{F2}  & Debugausgabe im Konsolenfenster: def omxplayerDebugPrint(self):\\
+\button{F9}  & Transparenz auf Defaultwert setzen (Kommandozeilenparameter -alpha)\\
+\button{F10} & Öffnen des Menüs (offenbar ein internes TKinter-Feature)\\
+\button{F11} & Wechsel zwischen Videoanzeige im Fenster und Vollbild\\
+\button{F12} & Wechsel der "aspect modes": letterbox, fill, stretch\\
+\end{tabular}
+\vspace{0.25cm}
+\caption{Funktionstastenbelegung in \Bezeichnung}
+\end{table}
+
+\begin{bclogo}[logo = \bclampe, noborder = true]{Hinweis}
+Ein hoher alpha-Wert (wenig Transparenz) kann vor allem bei Vollbildanzeige oder
+großen Videofenstern die Bedienung einschränken. Durch Drücken von \button{F9}
+wird der alpha-Wert auf einen einstellbaren Standardwert (normalerweise 120) 
+gesetzt. Damit ist eine Bedienung der Oberfläche wieder einigermaßen möglich,
+da die transparente Videodarstellung den Desktop durchscheinen lässt.
+\end{bclogo}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{yamuplay_videobox.png}
+\caption{Video mit {\Bezeichnung} in einem Fenster abspielen}
+\label{fig:yamuplay_videobox}
+\end{figure}
+
+
+%------------------------------------------------------------------------------%
+\subsection{Aufruf im Terminalfenster und Kommandozeilenparameter}
+Der Start von {\Bezeichnung} erfolgt im Terminal über die Kommandos\\
+\verb|  cd /home/pi/yamuplay|\\
+\verb|  ./yamuplay.py [Parameter] [Mediadatei(en)]|
+
+Nach dem Programmstart wird im Terminalfenster eine kurze Hilfe ausgegeben,
+in der \ua die Aufrufparameter beschrieben werden.
+\newpage
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{ll}
+\verb|-f <bool>    | & 0=Videoanzeige im Fenster, 1=Videoanzeige als Vollbild\\
+\verb|-a <mode>    | & \textit{aspect mode} mit den Optionen \textit{letterbox}, \textit{fill} und \textit{stretch}\\
+\verb|-k <bool>    | & 0=Videofenster an die Größe des Videos anpassen,\\
+\verb|             | & 1=Größe des Videofensters nicht anpassen\\
+\verb|-c <backcol> | & Hintergrundfarbe des Videofensters festlegen\\
+\verb|-alpha <int> | & alpha-Standardwert für Druck von \button{F9} festlegen\\
+\verb|-dx <pixel>  | & X-Versatz zwischen GPU und CPU\\
+\verb|-dy <pixel>  | & Y-Versatz zwischen GPU und CPU
+\end{tabular}
+\vspace{0.25cm}
+\caption{Kommandozeilenparameter von \Bezeichnung}
+\end{table}
+
+\begin{bclogo}[logo = \bclampe, noborder = true]{Hinweis}
+Bei Betrieb des {\RPi} an einem FullHD-Fernsehgerät mit einer nominalen Auflösung
+von 1920x1080 anstelle eines Computermonitors ist ein Versatz von \Code{-dx 48}
+und \Code{-dy 48} zu verwenden, um die Videoausgabe durch die GPU mit dem von der
+CPU angezeigten Videofenster in Deckung zu bringen.
+Die \textit{echte} Auflösung eines FullHD-Fernsehers beträgt offenbar nur
+1824x984 Pixel.
+\end{bclogo}
+
+Im weiteren Betrieb von {\Bezeichnung} dient das Terminalfenster auch zur Ausgabe
+von Debuginformationen. Mit der Taste \button{F2} erfolgt die in der Routine
+\Code{def omxplayerDebugPrint(self):} programmierte Debugausgabe im Terminal.
+Außerdem machen viele Routinen Debugausgaben der von ihnen ermittelten Werte. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Erweiterungen und Verbesserungen der Software}
+\label{sect:Erweiterungen}
+Zuletzt noch eine Liste von Punkten, um die das Python3-Script \filenam{yamuplay.py} 
+ergänzt werden könnte. Hier handelt es sich um ein \textit{Brainstorming}. Die
+Reihenfolge soll keine Gewichtung darstellen!
+
+\begin{itemize}
+\item \textbf{FEHLER:\\Das Schließen des Videofensters mit dem roten "`X"' führt zu einer Script-Fehlermeldung!}\\
+      Ein Umschalten von Vollbild in Fensteransicht ist nicht mehr möglich, da das Fenster geschlossen wurde.\\
+      --> nicht schließen, sondern minimieren?
+\item \textbf{Tastaturbedienung erweitern}\\
+      Durch Drücken von \button{ENTER} oder \button{Space} soll der aktuelle
+      Listeneintrag (Treeview, Playlist) aktiviert werden. Identisch zu
+      Doppelklick
+\item \textbf{Scrolling durch Wischgesten wie an einem Smartphone}\\
+      horizontal und vertikal: \Code{Treeview.xview} bzw. \Code{Treeview.yview}
+\item \textbf{Scrollbalken für Treeview und Playlist}\\
+      horizontal und vertikal, da die Schrift der Listeneinträge wegen der 
+      vorgesehenen Touchbedienung relativ groß ist.
+\item \textbf{Auf die Gesamtdauer eines Stückes skalierter "`Fortschrittsbalken"'}\\
+      einfache Verschiebemöglichkeit mit Zeitanzeige wie bei den meisten Mediaplayern
+      Das Steuerelement existiert bereits, hat aber noch keine Funktion!
+\item \textbf{Anzeige von Titelnummer und aktueller Laufzeit}\\
+      wie bei den meisten klassischen CD-Spielern
+\item \textbf{\textit{Drag + Drop} von Mediendateien aus der Baumstruktur in die Playlist}\\
+      Damit hätte man die Möglichkeit, neue Titel irgendwo in der Mitte der
+      bestehenden Playlist einzufügen. Momentan werden alle neuen Titel hinten
+      angehängt.
+\item \textbf{Lautstärke über \filenam{\omxplayer} einstellen}\\
+      \textbf{WICHTIG:}\\
+      ALSA funktioniert wegen der Hardwarenähe von \filenam{\omxplayer} nicht!
+\item \textbf{omxplayer-eigenes Fading beseitigen (falls möglich)}\\
+      Der \filenam{\omxplayer} macht ein kurzes Fading (< 1 Sekunde) beim Start
+      einer neuen Musikdatei. Dies ist manchmal wirklich störend!\\
+      Komischerweise nicht bei Videodateien
+\item \textbf{PLAYLIST}\\
+      * bereinigen um nicht mehr vorhandene oder ungültige Dateien\\
+      * Dateien über Menü auch aus Orten ungleich \filenam{/media/pi/...} laden\\
+      * bei zweitem Aufruf von {\Bezeichnung} die Dateien aus den Kommandozeilenparametern an die Playlist anhängen.\\
+      * Bei angegebenen Kommandozeilenparametern sofort nach dem Programmstart mit dem Abspielen beginnen\\
+      * BILDER als Diashow anzeigen (Zeit über Menü/cmdlin einstellbar)
+\item \textbf{Schriftgröße anpassen auf unterschiedliche Displaygrößen}\\
+      \textbf{schwierig:}\\
+      Schriftgröße vor allem fürs Treeview-Steuerelement parametrierbar machen 
+\item \textbf{Erkennung anderer USB-Gerätetypen (Smartphones)}\\
+      Derzeit wird nur der USB-Gerätetyp "`Mass Storage Device"' unterstützt.
+      Viele neuere Smartphones stellen ihre Daten mitunter nur noch über MTP
+      (Media Transfer Protocol), eine Weiterentwicklung von PTP (Picture
+      Transfer Protocol) zur Verfügung.
+\item \textbf{Dateitypen berücksichtigen}\\
+      Derzeit werden alle vorhandenen Dateien angezeigt. Über die Dateiendung oder
+      eine "`magische Dateinummer"' am Dateianfang nur die Mediendateien auflisten.\\
+      * Klären, welche Dateitypen von \filenam{omxplayer.bin} überhaupt unterstützt werden.\\
+      * Playlists (\filenam{*.mpu}), Bilddateien, Textdateien, und pdf berücksichtigen?\\
+      --> Python-Modul \Code{python-magic} wurde für die als Kommandozeilenparameter
+      angegebenen Dateien bereits implementiert. Bei Auswahl in Treeview ebenfalls 
+      berücksichtigen...
+\item \textbf{Einbinden der vorhandenen Dateien in die Baumansicht}\\
+      Derzeit wird ein USB-Laufwerk, nachdem es erkannt wurde, immer
+      \textbf{komplett} (rekursiv) eingelesen! Dies kann bei großen Laufwerken
+      mit vielen Einzeldateien mitunter recht lange dauern! Besser wäre es, nur
+      das gerade geöffnete Verzeichnis \textbf{flach} und nicht rekursiv
+      einzulesen. Über dieses Vorgehen werden die Dateien stückweise registriert
+      und der Vorgang dauert nie arg lange.\\
+      Zu berücksichtigen ist das aber bei der Dateisuche, da zum Suchzeitpunkt
+      nicht zwingend schon alle Unterverzeichnisse komplett eingelesen wurden!\\
+      --> Einlesevorgang bei riesigen USB-Speichern als Hintergrundthread?
+\item \textbf{"`Skins"'} (richtiges Wort?)\\
+      Neben dem GUI-Modus für Tastatur-/Mausbedienung (bzw. Touchdisplay) auch
+      Modes für:\\
+      * Bedienung durch Kinder: grafische Aufbereitung (Metadaten, Zusatzgrafikdateien)\\
+      * Bedienung im Auto:\\
+      Bedienung über Taster an GPIOs\\
+      KEINE VIDEOS! (bzw. alpha-Wert=0)\\
+\end{itemize}
+
+Hierbei handelt es sich um die noch nicht abgearbeiteten Punkte aus meiner
+Schmierzettelsammlung. Diese Liste erhebt aber keinen Anspruch auf
+Vollständigkeit. \smiley{smile}\\
+
+\texttt{schlizbaeda}
+

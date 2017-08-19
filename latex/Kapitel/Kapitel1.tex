@@ -1,0 +1,187 @@
+\chapter{Einführung}
+\label{cha:Einfuehrung}
+
+%% Diese Auflistung könnte irgendwann notwendig werden,
+%% wenn auf Github verschiedene Versionsstände herumgeistern und die
+%% einzelnen Nutzer evtl. verschiedene Stände vorliegen haben...
+%Ausgabestände dieser Dokumentation:
+%
+%\begin{tabular}{llp{0.70\textwidth}}
+%\textbf{Version 1} & 20.02.2016 & Erstversion für Programmversion V0.1\\
+%\textbf{Version 2} & 01.07.2016 & zusätzliche Hinweise zur Software-Installation von Version V0.1\\
+%\textbf{Version 3} & 18.08.2017 & {\Bezeichnung} {\Version}\\
+%\end{tabular}
+
+Diese Dokumentation beschreibt die Installation und Anwendung von {\Bezeichnung}
+{\Version} auf einem {\RPi} unter dem Betriebssystem \textit{Raspbian Jessie 
+with Desktop (PIXEL)} vom 05.07.2017, Imagedatei 
+\textbf{\filenam{2017-07-05-raspbian-jessie.img}}. Um das SD-Image für eine 
+SD-Karte mit nur 4GB Speicherkapazität anzupassen, wurde das Programmpaket 
+\textit{Mathematica/Wolfram} (ca. 683MB) gelöscht und das Dateisystem 
+entsprechend verkleinert.\\
+Die Software wurde auf einem {\RPi} 2B (Quad Core, 900MHz, 1GB RAM) erstellt und
+getestet. Auch die Inbetriebnahme auf einem {\RPi} Modell A+ (Single Core, 
+700MHz, 512MB RAM) verlief erfolgreich.\\
+Nicht geprüft wurde hingegen die Lauffähigkeit unter der neuen 
+Be\-triebs\-system\-ver\-sion \textit{\mbox{Raspbian} Stretch}, Imagedatei 
+\textbf{\filenam{2017-08-16-raspbian-stretch.img}} oder neuer!
+
+
+\section{Kurzbeschreibung der Software}
+\label{sec:Kurzbeschreibung}
+"`\Bezeichnung"' \bzw "`\BezeichnungLang"' ist ein in \textbf{Python3}
+erstellter Wrapper für den Mediaplayer \textbf{\filenam{\omxplayer}}, welcher
+optimal auf die Hardware des {\RPi} zugeschnitten ist. Neben der Steuerung des 
+nackten \textbf{\filenam{\omxplayer}} über Kommandozeilenparameter oder die 
+Tastatur ("`hot keys"') ist auch eine Kommunikation mittels \textbf{D-Bus} 
+möglich.\\
+Die ursprüngliche Absicht war, eine Software zu erstellen, mit der eine einfache
+und intuitive Handhabung einer Musiksammlung möglich ist. Dabei sollte sich die
+Bedienung an einem klassischen CD-Spieler orientieren. Unter Linux und somit
+auch auf dem {\RPi} gibt es das hervorragende Softwarepaket \textbf{MPD} ("`Music
+Player Daemon"'), das \ua über ALSA alle auf dem Computer installierten
+Soundkarten unterstützt und zahlreiche Client-Anwendungen (MPC) zur Verfügung
+stellt. Sein einziger Nachteil liegt in der Verwaltung der Musikdateien über
+eine Datenbank und den damit verbundenen umständlichen und aufwändigen
+Aktualisierungsarbeiten bei neuen Musikdateien, die dem einfachen
+CD-Spieler-Prinzip entgegenstehen. \textit{Gerne lasse ich mich hier vom
+Gegenteil überzeugen, falls es für den {\RPi} taugliche MPCs geben sollte, die
+obigen Anforderungen genügen \smiley{wink}}
+(\url{mailto:schlizbaeda@gmx.de}).\\
+Die Software \textbf{\Bezeichnung} in Version {\Version} besteht aus einer
+grafisch einfach gehaltenen, mit dem Python-Modul \textbf{tkinter} erstellten
+Benutzeroberfläche (GUI) ähnlich einem Dateimanager (siehe Abbildung 
+\ref{fig:yamuplay_aufruf}):  Im linken Teil befindet
+sich ein sogenanntes Treeview-Steuerelement, in dem die hierarchische
+Ordnerstruktur von Laufwerken angezeigt wird, die unter \filenam{/media/pi}
+gemountet sind. Am {\RPi} neu angeschlossene USB-Laufwerke werden automatisch
+erkannt und entsprechend in die Ordnerstruktur eingebunden. Mediendateien (nicht 
+nur Musik, auch Videos) können durch einen Doppelklick in die Playlist eingefügt
+werden. Links oben ist ein Eingabefeld für die Titelsuche enthalten.\\
+Der rechte Teil der GUI besteht oben aus den Schaltflächen, die den klassischen 
+Tasten eines CD-Spielers entsprechen: \textit{Play/Pause}, \textit{fast forward},
+\textit{rewind}, Titelsprung und \textit{Stop}. Direkt darunter befindet sich 
+eine in {\Version} noch nicht aktive Schiebeleiste, die später die aktuelle 
+Position in der gerade laufenden Mediendatei anzeigen und auch ein schnelles 
+Verschieben ermöglichen soll. Rechts unten ist die Playlist, in der alle zum 
+Abspielen ausgewählten Mediendateien angezeigt werden sowie die Schaltflächen zum
+Entfernen und Verschieben der Mediendateien. Ein Doppelklick auf eine Mediendatei
+der Playlist beendet das laufende Stück und beginnt mit dem Abspielen des 
+angeklickten Titels.\\
+Das Menü der GUI ermöglicht unter \menuitem{Datei} das Laden und Speichern von 
+Playlists sowie das Beenden der Software. Im Dropdown-Menü \menuitem{Ansicht} 
+können diverse Einstellungen für die Wiedergabe von Videodateien eingestellt 
+werden. Unter \menuitem{Hilfe} ist derzeit nur die Anzeige einer Aboutbox 
+möglich.\\
+
+
+\section{Rechtliche Hinweise zu Lizenz, Gewährleistung und Links}
+\subsection{Software unter GPL v3 }
+Die Software \textbf{\Bezeichnung} wird unter der Lizenz GPL v3 der \Verein{Free
+Software Foundation} veröffentlicht. Sie darf frei kopiert und privat oder 
+kommerziell gemäß der Lizenzvorgaben verwendet werden. Bitte lesen Sie die
+GPL v3, die sich im Programmpaket in der Datei \filenam{COPYING} befindet
+oder laden Sie den Originaltext aus dem Internet von
+\url{https://www.gnu.org/licenses/gpl-3.0} herunter.
+
+{\autor} als Urheber und Copyrightinhaber stellt die Software "`so wie sie ist"'
+ohne Garantie und ohne Zusicherung einer bestimmten Funktionalität zum Download
+bereit. Es steht Ihnen als Anwender frei, die Software zu benutzen oder es eben
+nicht zu tun. Entscheiden Sie sich für die Benutzung, so tun Sie dies auf
+eigenes Risiko und auf eigene Verantwortung. Der Autor übernimmt keine Garantie
+für die Software und deren Funktion und haftet auch nicht für Schäden, die aus
+der Installation und Verwendung der Software entstehen.
+
+\subsection{Dokumentation unter FDL v1.3}
+Diese Dokumentation wurde mit dem Textsatzsystem {\LaTeX} erstellt.\\
+Sie darf gemäß der Bestimmungen aus der Lizenz FDL v1.3 (oder nachfolgend)
+kopiert, verteilt und/oder geändert werden. Details siehe 
+\url{http://www.gnu.org/licenses/fdl.html}
+
+\subsection{Externe Internet-Links}
+\textbf{Einfach weil's sein muss:}\\
+In diesem Dokument befinden sich Hyperlinks zu verschiedenen externen Seiten 
+anderer Anbieter im Internet, die außerhalb des Verantwortungsbereiches des 
+Autors liegen. Durch die bloße Anbringung eines Links auf eine fremde Seite 
+macht sich der Autor deren Inhalte nicht zu eigen, da er auf die Gestaltung 
+dieser Seiten keinerlei Einfluss hat. Zum Zeitpunkt der Verlinkung waren auf 
+den verlinkten Seiten keine illegalen Inhalte erkennbar. Sollten aktuelle
+oder künftige Inhalte jedoch rechtswidrig sein, so kann der Autor darüber
+per e-mail an \url{mailto:schlizbaeda@gmx.de} informiert werden. Es werden
+dann entsprechende Maßnahmen zur Beseitigung des/der betroffenen Links ergriffen.
+
+
+\section{Konventionen dieser Dokumentation}
+Folgende gestalterische Konventionen werden für die Dokumentation festgelegt:
+
+\begin{table}[!h]
+\centering
+\renewcommand{\arraystretch}{2}
+\begin{tabular}{|p{3.5cm}|p{10.5cm}|}
+\hline
+\parbox[c]{1em}{\begin{bclogo}[logo = \bclampe, noborder = true]{Hinweis}
+Text
+\end{bclogo}}
+	& Ein Hinweis enthält zusätzliche Information bzw. relevante Erläuterung zu einer bestimmten Funktionalität\\
+\hline
+\parbox[c]{3.5cm}{\begin{bclogo}[arrondi = 0.2, logo = \bcinfo, ombre = true, epOmbre = 0.25, couleurOmbre = black!30,blur]{Achtung}
+Text
+\end{bclogo}}	& Ein Warnhinweis, dessen Nichtbeachtung zu Geräteschäden führen kann\\
+\hline
+\button{Schaltfläche} & Kennzeichnung von Schaltflächen der Software \textbf{\Bezeichnung}\\
+\hline
+\menuitem{Menüpunkt} & {Kennzeichnung von Menüpunkten der Software \textbf{\Bezeichnung}}\\
+\hline
+\prompt{Meldung} & Kennzeichnung von Meldungen der Software \textbf{\Bezeichnung}\\
+\hline
+\end{tabular}
+\vspace{0.5cm}
+\caption{Konventionen der Dokumentation}
+\end{table}
+
+
+\newpage
+\section{Abkürzungsverzeichnis}
+Folgende Abkürzungen werden in dieser Dokumentation verwendet:
+\begin{acronym}[\Bezeichnung]
+	\acro{ALSA}{\textbf{A}dvanced \textbf{L}inux \textbf{S}ound \textbf{A}rchitecture}
+	\acro{D-Bus}{\textbf{D}esktop-\textbf{Bus}}
+%	\acro{DVI}{\textbf{D}igital \textbf{V}isual \textbf{I}nterface}
+	\acro{GUI}{\textbf{G}raphical \textbf{U}ser \textbf{I}nterface}
+	\acro{HDMI}{\textbf{H}igh \textbf{D}efinition \textbf{M}ultimedia \textbf{I}nterface}
+	%\acro{mP}{\textbf{M}ikro \textbf{P}rozessor}
+	\acro{MPC}{\textbf{M}usic \textbf{P}layer \textbf{C}lient}
+	\acro{MPD}{\textbf{M}usic \textbf{P}layer \textbf{D}aemon}
+	\acro{SoC}{\textbf{S}ystem \textbf{o}n \textbf{S}ilicon: {\textmu}P-Bausteine mit viel Peripheriemodulen wie \zB der Broadcom 2835, 2836, 2837 auf dem \RPi}
+%	\acro{USV}{\textbf{U}nterbrechnungsfreie \textbf{S}trom\textbf{v}ersorgung}
+\end{acronym}
+
+
+\section{Danksagung}
+Mein Dank gilt insbesondere folgenden Personen
+\begin{itemize}
+\item \textbf{\textit{Riegler Hias} und \textit{d' Hundskrippln}}\\
+     In dieser Dokumentation wird an verschiedenen Stellen auf das Musikstück
+     \textit{Gloana Bauer} von \textbf{Riegler Hias feat. d' Hundskrippln} 
+     verwiesen, weil ich dieses Lied einfach gut finde.\\
+     \begin{tabular}{ll}
+     \url{https://www.hundskrippln.de} & 93336 Steinsdorf\\
+     \url{http://www.riegler-hias.de}  & 93349 Hiendorf\\
+     \end{tabular}
+     
+     Ich bedanke mich für die Erlaubnis, Screenshots aus dem Video zu diesem
+     Musikstück verwenden zu dürfen.
+\item \textbf{meigrafd}\\
+     Dieser Benutzer des größten deutschsprachigen Forums für den {\RPi} lud 
+     damals offenbar die Version V0.1 von {\Bezeichnung} herunter und testete 
+     es anschließend ziemlich ausführlich durch. Er ließ mir äußerst 
+     konstruktive Kritik zukommen, an welchen Stellen mein ursprüngliches 
+     Python-Script noch zu verbessern wäre.\\
+     Insbesondere  schlug er mir vor, meinen damaligen Code von klassischem 
+     Python mit unzähligen \Code{global}-Deklarationen auf objektorientierte 
+     Programmierung umzustellen. Dazu hatte er \textit{einfach so} mein 
+     komplettes Script angepasst und mir wieder zukommen lassen. Darauf 
+     aufbauend korrigierte und erweiterte ich das Script auf den jetzigen
+     Versionsstand {\Version}.
+     \url{http://www.forum-raspberrypi.de/User-meigrafd}
+\end{itemize}
