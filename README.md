@@ -1,6 +1,13 @@
 # yamuplay
 YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2
 
+## ACHTUNG:
+...und wie immer funktioniert es bei der Umstellung des Raspbian-Release nicht!
+Dieses Programm läuft unter Raspbian Jessie (Imagedatei 2017-07-05-raspbian-jessie.img)
+aber leider NICHT unter Raspbian Stretch (Imagedatei 2017-08-16-raspbian-stretch.img)
+
+Also vor dem Herunterladen bitte die persönlcih verwendete Raspbian-Version kontrollieren!
+
 ## Download und Installation inklusive aller Module und Bibliotheken
 yamuplay (GPL v3)
 ```shell
