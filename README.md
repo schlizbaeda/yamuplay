@@ -1,6 +1,29 @@
 # yamuplay
 YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2.1
 
+## Hinweis zur aktuellen Version V0.2.1
+YAMuPlay nutzt folgende externe Module:
+* python3-dbus, Version unbekannt
+* https://github.com/willprice/python-omxplayer-wrapper.git, V0.2.3
+* https://github.com/pyudev/pyudev.git, V0.21.0
+* https://github.com/ahupp/python-magic.git, V0.4.13
+
+Da es in der Vergangenheit immer wieder zu Kompatibilitätsproblemen kam,
+wenn die jeweils neueste Programmversion heruntergeladen wurde, wird
+diesem Repository ab V0.2.1 IMMER der tatsächlich verwendete Versionsstand
+der genannten GitHub-Repositorys hinzugefügt, um von inkompatiblen Updates
+und Änderungen unabhängig zu bleiben.
+
+Bei größeren Versionssprüngen von YAMuPlay werden dann immer die aktuellen
+Versionsstände der benötigten externen Module ergänzt.
+
+Der Grund für diese Maßnahme ist eine Vereinfachung für den Anwender. 
+Ein simpler Download mit
+```shell
+git clone https://github.com/schlizbaeda/yamuplay.git
+```
+sollte dann prinzipiell immer funktionieren.
+
 ## Download und Installation inklusive aller Module und Bibliotheken
 yamuplay (GPL v3)
 ```shell
