@@ -13,6 +13,9 @@ vcgencmd version
 ```
 Bei einem Datum >= Tue Aug 8 16:00:15 BST 2017 wird diese Version vermutlich nicht funktionieren
 
+## Erkenntnis vom 23.09.2017:
+Der Fehler liegt nicht am Raspbian-Release, sondern an aktuellen Updates des Repositorys https://github.com/willprice/python-omxplayer-wrapper, die inkompatibel zu der von mir verwendeten Variante ist! 
+
 ## Download und Installation inklusive aller Module und Bibliotheken
 yamuplay (GPL v3)
 ```shell
