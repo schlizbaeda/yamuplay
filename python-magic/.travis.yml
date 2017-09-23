@@ -1,0 +1,27 @@
+language: python
+
+# needed to use trusty
+sudo: required
+
+dist: trusty
+
+python:
+  - "2.6"
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "nightly"
+
+install:
+  - pip install coveralls
+  - pip install codecov
+  - python setup.py install
+
+script:
+  - coverage run setup.py test
+
+after_success:
+  - coveralls
+  - codecov

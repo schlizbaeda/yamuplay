@@ -21,7 +21,7 @@
 #
 # Contributions:
 # --------------
-# Thanks to meigrafd from the German Raspberry PI forum for improving 
+# Thanks to meigrafd from the German Raspberry Pi forum for improving 
 # my code from classical python programming (imperative programming 
 # paradigm) into object-oriented python code. That made it much easier
 # to maintain this project.
@@ -32,34 +32,39 @@
 # YAMuPlay uses the following modules:
 # ------------------------------------
 #
-# go to /home/pi before downloading all the necessary external modules:
+# * python3-dbus             V?                               MIT
+# * python-omxplayer-wrapper V0.2.3                           LGPL v3
+# * pyudev                   V0.21.0                          LGPL v2.1
+# * python-magic             V0.4.13                          MIT
 #
-# * python-omxplayer-wrapper                                  LPGL v3
-#   cd /home/pi
-#   git clone https://github.com/willprice/python-omxplayer-wrapper.git
-#   cd python-omxplayer-wrapper
+# The current GitHub repository of YAMuPlay contains all external
+# modules which are necessary for running YAMuPlay. This was decided by
+# schlizbaeda for version 0.2.1 and up to avoid any inconsistencies in 
+# future due to incompatible updates of these modules by their owners. 
+# This already happened twice in past.
+# Call the following commands to install the necessary external modules:
+# 
+#   cd /home/pi/yamuplay
+#   sudo apt-get install python3-dbus # not part of YAMuPlay repository
+#   #git clone https://github.com/willprice/python-omxplayer-wrapper.git
+#   #git clone https://github.com/pyudev/pyudev.git
+#   #git clone https://github.com/ahupp/python-magic.git
+#
+#   cd /home/pi/yamuplay/python-omxplayer-wrapper
 #   sudo python3 setup.py install
 #
-# * python3-dbus                                              MIT
-#   cd /home/pi
-#   sudo apt-get install python3-dbus
-#
-# * pyudev v0.21.0                                            LPGL v2.1
-#   cd /home/pi
-#   git clone https://github.com/pyudev/pyudev.git
-#   cd pyudev
+#   cd /home/pi/yamuplay/pyudev
 #   sudo python3 setup.py install
 #
-# * python-magic                                              MIT
-#   cd /home/pi
-#   git clone https://github.com/ahupp/python-magic.git
-#   cd python-magic
+#   cd /home/pi/yamuplay/python-magic
 #   sudo python3 setup.py install
 #
+
 
 import signal # notwendig, um richtig auf Strg+C (in der aufrufenden Konsole) zu reagieren
 import sys    # 2017-08-14 schlizbaeda V0.2: notwendig, um die Kommandozeilenparameter zu ermitteln
 import magic  # 2017-08-14 schlizbaeda V0.2: notwendig, um die "Magic Number" (Dateityp) einer Datei zu ermitteln
+import copy   # 2017-09-20 schlizbaeda V0.2.1: Modul zum ECHTEN Kopieren von veränderlichen Datentypen ("mutable", z.B. Listen)
 import os
 import subprocess
 import time
@@ -81,7 +86,7 @@ class YAMuPlay(object):
     def __init__(self, PATH = '/media/pi'):  # TODO: Unterscheidung wheezy (/media) und jessie (/media/pi)     
         # globale Variablen mit Vorbelegung:
         self.gl_appName = 'YAMuPlay'
-        self.gl_appVer = '0.2'
+        self.gl_appVer = '0.2.1'
         
         self.GL_PATHSEPARATOR = '/'          # TODO: os.path.sep() liefert das Pfad-Trennzeichen, unter LINUX '/'
         self.gl_MediaDir = PATH
@@ -408,8 +413,8 @@ class YAMuPlay(object):
                 ##    self.gl_omxplayer._get_root_interface().CanQuit()        # Eigenschaft aus dem Root-Interface
                 ##    self.gl_omxplayer._get_properties_interface().ResWidth() # Eigenschaft aus dem Player-Interface
                 ##    self.gl_omxplayer._get_properties_interface().Mute()     # Methode aus dem Player-Interface
-                print('    gl_omxplayer.ResWidth (generic)=' + str(self.gl_omxplayer._get_properties_interface().ResWidth()))
-                print('    gl_omxplayer.ResHeight (generic)=' + str(self.gl_omxplayer._get_properties_interface().ResHeight()))
+                print('    gl_omxplayer.width= ' + str(self.gl_omxplayer_GetWidth()))  #print('    gl_omxplayer.width=' + str(self.gl_omxplayer.width()))   #print('    gl_omxplayer.ResWidth (generic)=' + str(self.gl_omxplayer._get_properties_interface().ResWidth()))   # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methode ._get_properties_interface().ResWidth() durch offizielle Methode .width() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
+                print('    gl_omxplayer.height=' + str(self.gl_omxplayer_GetHeight())) #print('    gl_omxplayer.height=' + str(self.gl_omxplayer.height())) #print('    gl_omxplayer.ResHeight (generic)=' + str(self.gl_omxplayer._get_properties_interface().ResHeight())) # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methode ._get_properties_interface().ResHeight() durch offizielle Methode .height() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
                 #print('    gl_omxplayer.Aspect (generic)=' + str(self.gl_omxplayer._get_properties_interface().Aspect()))
                 #print('    gl_omxplayer.Fullscreen (generic)=' + str(self.gl_omxplayer._get_properties_interface().Fullscreen()))
                 #print('    gl_omxplayer.CanSetFullscreen (generic)=' + str(self.gl_omxplayer._get_properties_interface().CanSetFullscreen()))
@@ -423,11 +428,11 @@ class YAMuPlay(object):
             # omxplayer läuft:
             screenW = self.Videobox.winfo_screenwidth()
             screenH = self.Videobox.winfo_screenheight()
-            w = self.gl_omxplayer._get_properties_interface().ResWidth()
-            h = self.gl_omxplayer._get_properties_interface().ResHeight()
+            w = self.gl_omxplayer_GetWidth()  #w = self.gl_omxplayer.width()  #w = self.gl_omxplayer._get_properties_interface().ResWidth()  # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methode ._get_properties_interface().ResWidth() durch offizielle Methode .width() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
+            h = self.gl_omxplayer_GetHeight() #h = self.gl_omxplayer.height() #h = self.gl_omxplayer._get_properties_interface().ResHeight() # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methode ._get_properties_interface().ResHeight() durch offizielle Methode .height() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
             scale = 1.0
-            if w + h + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0:
-                # Es handelt sich um ein Video, weil die Videoabmessungen > 0 sind (Für MP3-Audiodateien liefert omxplayer.bin ResWidth=0, ResHeight=0, Aspect=0.0)
+            if w + h + self.gl_omxplayer_GetAspect() > 0.0: #if w + h + self.gl_omxplayer.aspect_ratio() > 0.0: #if w + h + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0: # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methode ._get_properties_interface().Aspect() durch offizielle Methode .aspect_ratio() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
+                # Es handelt sich um ein Video, weil die Videoabmessungen > 0 sind (Für MP3-Audiodateien liefert omxplayer.bin width=0, height=0, aspect_ratio=0.0)
                 if not self.gl_keepVideoboxSize:
                     while w * 1.25 > screenW or h * 1.25 > screenH:
                         w *= 0.8
@@ -445,8 +450,8 @@ class YAMuPlay(object):
         # 2016-11-20 schlizbaeda V0.2: Das Video in das bestehende Fenster größenmäßig einfügen:
         if not self.gl_omxplayer is None:
             # omxplayer läuft:
-            if self.gl_omxplayer._get_properties_interface().ResWidth() + self.gl_omxplayer._get_properties_interface().ResHeight() + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0:
-                # Es handelt sich um ein Video, weil die Videoabmessungen > 0 sind (Für MP3-Audiodateien liefert omxplayer.bin ResWidth=0, ResHeight=0, Aspect=0.0)
+            if self.gl_omxplayer_GetWidth() + self.gl_omxplayer_GetHeight() + self.gl_omxplayer_GetAspect() > 0.0: #if self.gl_omxplayer.width() + self.gl_omxplayer.height() + self.gl_omxplayer.aspect_ratio() > 0.0: #if self.gl_omxplayer._get_properties_interface().ResWidth() + self.gl_omxplayer._get_properties_interface().ResHeight() + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0: # # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methoden ._get_properties_interface().*() durch offizielle Methoden .*() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
+                # Es handelt sich um ein Video, weil die Videoabmessungen > 0 sind (Für MP3-Audiodateien liefert omxplayer.bin width=0, height=0, aspect_ratio=0.0)
                 self.Videobox.deiconify()
                 self.Videobox.title(self.gl_omxplayer.get_source() + ' [' + self.gl_aspectMode + ']')
                 coord = self.Videobox.winfo_geometry().split('+')
@@ -550,8 +555,11 @@ class YAMuPlay(object):
                     pass
                 time.sleep(0.05)
                 try:
-                    txt = self.gl_omxplayer.playback_status()
-                    playing = txt == 'Playing' or txt == 'Paused'
+                    if self.gl_omxplayer is None:
+                        playing = False
+                    else:    
+                        txt = str(self.gl_omxplayer.playback_status())
+                        playing = txt == 'Playing' or txt == 'Paused'
                 except:
                     playing = True
             # Nächsten Eintrag aus der Playlist holen:
@@ -577,6 +585,21 @@ class YAMuPlay(object):
             self.gl_omxplayer = None
         self.updateButPlayPause() # Wenn die Playlist zu Ende ist, muss die Schaltfläche butPlayPause aktualisiert werden
 
+    # 2017-09-20 schlizbaeda V0.2.1:
+    # Hilfsfunktionen, da sich in künftigen Versionen des Moduls python-omxplayer-wrapper die folgenden Methoden ändern werden:
+    #if self.gl_omxplayer._get_properties_interface().ResWidth() + self.gl_omxplayer._get_properties_interface().ResHeight() + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0: # # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methoden ._get_properties_interface().*() durch offizielle Methoden .*() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
+    def gl_omxplayer_GetAspect(self):
+        return self.gl_omxplayer._get_properties_interface().Aspect()    # inoffizielle Methode bis python-omxplayer-wrapper V0.2.3-py3.5		
+        #return self.gl_omxplayer.aspect_ratio()                         # offizielle Methode für künftige Versionen von python-omxplayer-wrapper
+
+    def gl_omxplayer_GetHeight(self):                            
+        return self.gl_omxplayer._get_properties_interface().ResHeight() # inoffizielle Methode bis python-omxplayer-wrapper V0.2.3-py3.5
+        #return self.gl_omxplayer.height()                               # offizielle Methode für künftige Versionen von python-omxplayer-wrapper
+		
+    def gl_omxplayer_GetWidth(self):
+        return self.gl_omxplayer._get_properties_interface().ResWidth()  # inoffizielle Methode bis python-omxplayer-wrapper V0.2.3-py3.5
+        #return self.gl_omxplayer.width()                                # offizielle Methode für künftige Versionen von python-omxplayer-wrapper
+        
 
     ##### Ereignishandler für omxplayer-Steuerung #####
     # Teil 1: Schaltflächen analog zu einem CD-Player
@@ -742,7 +765,7 @@ class YAMuPlay(object):
         print('alpha (Transparenz):' + str(alpha))
         if not self.gl_omxplayer is None:
             # omxplayer läuft:
-            if self.gl_omxplayer._get_properties_interface().ResWidth() + self.gl_omxplayer._get_properties_interface().ResHeight() + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0:
+            if self.gl_omxplayer_GetWidth() + self.gl_omxplayer_GetHeight() + self.gl_omxplayer_GetAspect() > 0.0: #if self.gl_omxplayer.width() + self.gl_omxplayer.height() + self.gl_omxplayer.aspect_ratio() > 0.0: #if self.gl_omxplayer._get_properties_interface().ResWidth() + self.gl_omxplayer._get_properties_interface().ResHeight() + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0: # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methoden ._get_properties_interface().*() durch offizielle Methoden .*() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
                 # Es handelt sich um ein Video, weil die Videoabmessungen > 0 sind (Für MP3-Audiodateien liefert omxplayer.bin ResWidth=0, ResHeight=0, Aspect=0.0)
                 self.gl_omxplayer.set_alpha(alpha) # Alpha-Wert (Transparenz) über dbus ändern
 		
@@ -953,22 +976,33 @@ class YAMuPlay(object):
         ##print('attributes:  ' + str(iter(usbdevice.attributes)))
         tim = time.time() # Vergangene Sekunden seit dem 01. Januar 1970
         starttim = tim
-        curMediaDrives = os.listdir(self.gl_MediaDir)
-        oldMediaDrives = curMediaDrives
+        # 2017-09-20 schlizbaeda V0.2.1: Überprüfung mit Timeout, ob /media/pi überhaupt existiert:
+        curMediaDrives = []
+        try:
+            curMediaDrives = os.listdir(self.gl_MediaDir)
+        except:
+            # Eine Exception kann auftreten, wenn kein USB-Laufwerk gemountet ist:
+            # Dann existiert in /media u.U. nicht einmal das Unterverzeichnis /media/pi
+            # und os.listdir(self.gl_MediaDir) "wirft" die Exception "FileNotFoundError: [Errno 2] No such file or directory: '/media/pi'"
+            pass
+        oldMediaDrives = copy.copy(curMediaDrives)
         if usbdevice.action == 'add' and usbdevice.driver == 'usb-storage':
             cnt = 0
             while cnt < 10 and tim - starttim <= 9.0 and self.gl_quit == 0:
                 time.sleep(0.2)
                 tim = time.time() # Vergangene Sekunden seit dem 01. Januar 1970
-                curMediaDrives = os.listdir(self.gl_MediaDir)
+                try:
+                    curMediaDrives = os.listdir(self.gl_MediaDir)
+                except:
+                    pass
                 if curMediaDrives == oldMediaDrives:
                     cnt = 0
                 else:
                     cnt += 1
             if oldMediaDrives != curMediaDrives:
                 time.sleep(0.2)
-                # Die Directoryeinträge unter /media haben sich geändert (d.h. es ist ein neues USB-Laufwerk hinzugekommen)
-                # neues Laufwerk unter /media ermitteln:
+                # Die Directoryeinträge unter /media/pi haben sich geändert (d.h. es ist ein neues USB-Laufwerk hinzugekommen)
+                # neues Laufwerk unter /media/pi ermitteln:
                 for drive in curMediaDrives:
                     if oldMediaDrives.count(drive) == 0:
                         self.add_usbDrive(drive)
@@ -981,8 +1015,8 @@ class YAMuPlay(object):
                 tim = time.time() # Vergangene Sekunden seit dem 01. Januar 1970
                 curMediaDrives = os.listdir(self.gl_MediaDir)
             if oldMediaDrives != curMediaDrives:
-                # Die Directoryeinträge unter /media haben sich geändert (d.h. es ist ein neues USB-Laufwerk hinzugekommen)
-                # entferntes Laufwerk unter /media ermitteln:
+                # Die Directoryeinträge unter /media/pi haben sich geändert (d.h. es ist ein neues USB-Laufwerk hinzugekommen)
+                # entferntes Laufwerk unter /media/pi ermitteln:
                 for drive in oldMediaDrives:
                     if curMediaDrives.count(drive) == 0:
                         self.remove_usbDrive(drive)
@@ -993,7 +1027,7 @@ class YAMuPlay(object):
     ##### Ereignishandler für die erweiterte Programmbedienung #####
     def mnuFileOpen_Click(self):
             filename = tkinter.filedialog.askopenfilename(title = 'Playlist öffnen', filetypes = [('m3u-Playlist', '*.m3u'), ('Alle Dateien', '*')])
-            if filename != '':
+            if bool(filename):
                 try:
                     file = open(filename, 'r')
                 except IOError as err:
@@ -1304,8 +1338,15 @@ class YAMuPlay(object):
         self.trvMediadir.tag_configure('dir', font = self.dirFont)
         self.trvMediadir.tag_configure('file', font = self.fileFont)
         #trvMediadir.tag_configure('file', background = 'yellow')
-        for drive in os.listdir(self.gl_MediaDir):
-            self.add_usbDrive(drive)
+        try:
+            for drive in os.listdir(self.gl_MediaDir):
+                self.add_usbDrive(drive)
+        except:
+            # Eine Exception kann auftreten, wenn kein USB-Laufwerk gemountet ist:
+            # Dann existiert in /media u.U. nicht einmal das Unterverzeichnis /media/pi
+            # und os.listdir(self.gl_MediaDir) "wirft" die Exception "FileNotFoundError: [Errno 2] No such file or directory: '/media/pi'"
+            print('"' + self.gl_MediaDir + '" ist leer:')
+            print('Es wurde vermutlich noch kein USB-Laufwerk angeschlossen...')
 
         # Ereignishandler binden:
         self.YAMuPlayGUI.bind('<KeyPress>', self.YAMuPlayGUI_KeyPress)

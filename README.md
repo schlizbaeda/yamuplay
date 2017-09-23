@@ -1,20 +1,5 @@
 # yamuplay
-YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2
-
-## ACHTUNG:
-...und wie immer funktioniert es nach der Umstellung des Raspbian-Release nicht mehr!
-Dieses Programm läuft unter Raspbian Jessie (Imagedatei 2017-07-05-raspbian-jessie.img)
-aber leider NICHT unter Raspbian Stretch (Imagedatei 2017-08-16-raspbian-stretch.img)
-
-Also vor dem Herunterladen bitte die auf dem eigenen RPi (bzw. auf der SD-Karte) installierte Raspbian-Version kontrollieren!
-```shell
-uname -a
-vcgencmd version
-```
-Bei einem Datum >= Tue Aug 8 16:00:15 BST 2017 wird diese Version vermutlich nicht funktionieren
-
-## Erkenntnis vom 23.09.2017:
-Der Fehler liegt nicht am Raspbian-Release, sondern an aktuellen Updates des Repositorys https://github.com/willprice/python-omxplayer-wrapper, die inkompatibel zu der von mir verwendeten Variante ist! 
+YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2.1
 
 ## Download und Installation inklusive aller Module und Bibliotheken
 yamuplay (GPL v3)
@@ -25,43 +10,37 @@ cd yamuplay
 chmod 755 yamuplay.py
 ```
 
-python-omxplayer-wrapper (LPGL v3)
-```shell
-cd /home/pi/yamuplay
-git clone https://github.com/willprice/python-omxplayer-wrapper.git
-cd python-omxplayer-wrapper
-sudo python3 setup.py install
-```
-
-python3-dbus (MIT)
+python3-dbus V? (MIT)
 ```shell
 cd /home/pi/yamuplay
 sudo apt-get install python3-dbus
 ```
 
-pyudev v0.21.0 (LPGL v2.1)
+python-omxplayer-wrapper V0.2.3 (LGPL v3)
 ```shell
-cd /home/pi/yamuplay
-git clone https://github.com/pyudev/pyudev.git
-cd pyudev
+cd /home/pi/yamuplay/python-omxplayer-wrapper
 sudo python3 setup.py install
 ```
 
-python-magic (MIT)
+pyudev V0.21.0 (LGPL v2.1)
 ```shell
-cd /home/pi/yamuplay
-git clone https://github.com/ahupp/python-magic.git
-cd python-magic
+cd /home/pi/yamuplay/pyudev
+sudo python3 setup.py install
+```
+
+python-magic V0.4.13 (MIT)
+```shell
+cd /home/pi/yamuplay/python-magic
 sudo python3 setup.py install
 ```
 
 ## Anleitung
-Eine ausführliche Anleitung befindet sich demnächst in ./latex/YAMuPlay.pdf
+Eine ausführliche Anleitung befindet sich in ./latex/YAMuPlay.pdf
 
 Beim Start von ./yamuplay.py im Terminalfenster erscheint im Terminal folgende Kurzanleitung:
 ```shell
-YAMuPlay V0.2
-Yet Another Music Player -- Version 0.2
+YAMuPlay V0.2.1
+Yet Another Music Player -- Version 0.2.1
 
 Aufruf:
 YAMuPlay [Parameter] [Mediadatei(en)]
@@ -128,6 +107,11 @@ yamuplay V0.2
 * immer vollständige Pfade in der Playlist
 * Videodarstellung Vollbild oder im Fenster mit diversen Optionen
 * Unterstützung von Kommandozeilenparametern
+
+23.09.2017:
+yamuplay V0.2.1
+* lokale Kopien der verwendeten Versionsstände der anderen GitHub-Repositorys aufgenommen
+* Korrekturen kleinerer Laufzeitfehler
 
 ## TODO's:
 Ich plane, folgende Punkte in einer künftigen Version einzubauen:
