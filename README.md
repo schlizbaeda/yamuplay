@@ -1,7 +1,7 @@
 # yamuplay
-YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2.1
+YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2.2
 
-## Hinweis zur aktuellen Version V0.2.1
+## Hinweis zur aktuellen Version V0.2.2
 YAMuPlay nutzt folgende externe Module:
 * python3-dbus, Version unbekannt
 * https://github.com/willprice/python-omxplayer-wrapper.git, V0.2.3
@@ -9,20 +9,23 @@ YAMuPlay nutzt folgende externe Module:
 * https://github.com/ahupp/python-magic.git, V0.4.13
 
 Da es in der Vergangenheit immer wieder zu Kompatibilitätsproblemen kam,
-wenn die jeweils neueste Programmversion heruntergeladen wurde, wird
-diesem Repository ab V0.2.1 IMMER der tatsächlich verwendete Versionsstand
-der genannten GitHub-Repositorys hinzugefügt, um von inkompatiblen Updates
-und Änderungen unabhängig zu bleiben.
+wenn die jeweils neueste Programmversion der verwendeten Python-Module 
+heruntergeladen wurde, wird dem yamuplay-Repository ab V0.2.1 IMMER der 
+tatsächlich verwendete Versionsstand der genannten GitHub-Repositorys 
+der verwendeten Module hinzugefügt, um von inkompatiblen Updates und 
+Änderungen durch die Maintainer dieser Module unabhängig zu bleiben.
 
-Bei größeren Versionssprüngen von YAMuPlay werden dann immer die aktuellen
-Versionsstände der benötigten externen Module ergänzt.
+Bei größeren Versionssprüngen von YAMuPlay werden künftig vor den 
+Änderungen die dann aktuellen Versionsstände der benötigten externen 
+Module eingebunden.
 
 Der Grund für diese Maßnahme ist eine Vereinfachung für den Anwender. 
 Ein simpler Download mit
 ```shell
 git clone https://github.com/schlizbaeda/yamuplay.git
 ```
-sollte dann prinzipiell immer funktionieren.
+und Durchführung der Installation nach der hier beschriebenen 
+Vorgehensweise sollte dann prinzipiell immer funktionieren.
 
 ## Download und Installation inklusive aller Module und Bibliotheken
 yamuplay (GPL v3)
@@ -144,9 +147,9 @@ yamuplay V0.2.1
 
 04.01.2018:
 yamuplay V0.2.2
-Neuer Kommandozeilenparameter -o <audio>:
+* Neuer Kommandozeilenparameter -o <audio>
 Die neuen Versionen des omxplayers unterstützen jetzt auch die Audioausgabe 
-über ALSA. Eine sauber eingerichtete Soundkarte (USB, I²S) kann jetzt
+über ALSA. Eine sauber eingerichtete Soundkarte (USB, I²S) kann somit
 verwendet werden. Wichtig für den nächsten Faschingswagen :-)
 
 ## TODO's:
