@@ -86,7 +86,7 @@ class YAMuPlay(object):
     def __init__(self, PATH = '/media/pi'):  # TODO: Unterscheidung wheezy (/media) und jessie (/media/pi)     
         # globale Variablen mit Vorbelegung:
         self.gl_appName = 'YAMuPlay'
-        self.gl_appVer = '0.2.1'
+        self.gl_appVer = '0.2.2'
         
         self.GL_PATHSEPARATOR = '/'          # TODO: os.path.sep() liefert das Pfad-Trennzeichen, unter LINUX '/'
         self.gl_MediaDir = PATH
@@ -114,6 +114,7 @@ class YAMuPlay(object):
         self.gl_VideoboxBackcolor = ''       # 2017-08-14 schlizbaeda V0.2: Hintergrundfarbe des Videofensters (wichtig/nett wegen der Transparenz!)
         self.gl_dx = 0 #48                   # 2016-11-20 schlizbaeda V0.2: X-Versatz zwischen Desktop-Fenster und omxplayer-Video (GPU)
         self.gl_dy = 0 #48                   # 2016-11-20 schlizbaeda V0.2: Y-Versatz zwischen Desktop-Fenster und omxplayer-Video (GPU)
+        self.gl_audioOutput = ''             # 2017-11-25 schlizbaeda V0.2.2: Kommandozeilenparameter "-o alsa" für omxplayer
         self.gl_argvFilenames = []           # 2017-08-14 schlizbaeda V0.2: Nur die Dateinamen aus der Kommandozeile, die Optionen "-alpha" etc. wurden bereits herausgefiltert!
 
         # 2017-08-14 schlizbaeda V0.2: Kommandozeilenparameter berücksichtigen:
@@ -129,6 +130,8 @@ class YAMuPlay(object):
                 argmode = 4 # Kommandozeilenparameter für self.gl_keepVideoboxSize (boolean)
             elif arg == '-c':
                 argmode = 5 # Kommandozeilenparameter für self.gl_VideoboxBackcolor (string: "black" etc.)
+            elif arg == '-o':
+                argmode = 6 # 2017-11-25 schlizbaeda V0.2.2: Kommandozeilenparameter für self.gl_audioOutput (string "hdmi", "local", "both", "alsa[:device]")
             elif arg == '-dx':
                 argmode = 16 # Kommandozeilenparameter für self.gl_dx (integer)
             elif arg == '-dy':
@@ -159,6 +162,8 @@ class YAMuPlay(object):
                         pass
                 elif argmode == 5: # -c
                     self.gl_VideoboxBackcolor = arg.lower()
+                elif argmode == 6: # -o
+                    self.gl_audioOutput = arg.lower() # 2017-11-25 schlizbaeda V0.2.2
                 elif argmode == 16: # -dx
                     try:
                         self.gl_dx = int(arg)
@@ -181,6 +186,7 @@ class YAMuPlay(object):
         #print('aspect=' + self.gl_aspectMode)
         #print('keep=' + str(self.gl_keepVideoboxSize))
         #print('backCol=' + self.gl_VideoboxBackcolor)
+        #print('audioOut=' + self.gl_audioOutput)
         #print('dx=' + str(self.gl_dx))
         #print('dy=' + str(self.gl_dy))
         #print('files=' + str(len(self.gl_argvFilenames)))
@@ -455,7 +461,7 @@ class YAMuPlay(object):
                 self.Videobox.deiconify()
                 self.Videobox.title(self.gl_omxplayer.get_source() + ' [' + self.gl_aspectMode + ']')
                 coord = self.Videobox.winfo_geometry().split('+')
-                print(coord) # DEBUG!
+                #print(coord) # DEBUG!
                 sizes = coord[0].split('x')
                 coord[1] = int(coord[1]) + self.gl_dx
                 coord[2] = int(coord[2]) + self.gl_dy
@@ -510,8 +516,16 @@ class YAMuPlay(object):
             # beim Start eines Titels "Zeile 67:  <pid> Abgebrochen" meldet.
             # In diesem Falle würde sofort zum übernächsten Titel gesprungen werden,
             # was für den unbedarften Benutzer nicht nachvollziehbar ist!
+            omxplayer_cmdlin = [] # 2017-11-25 schlizbaeda V0.2.2: AudioOutput übergeben
+            if self.gl_audioOutput:
+                # 2017-11-25 schlizbaeda V0.2.2: Kommandozeilenparameter -o nur verwenden, wenn er wirklich existiert!
+                omxplayer_cmdlin.append('-o')
+                omxplayer_cmdlin.append(self.gl_audioOutput)
+            omxplayer_cmdlin.extend(['--alpha', str(alpha), '--aspect-mode', self.gl_aspectMode])
+            print('cmdlin=' + str(omxplayer_cmdlin))
             try:
-                self.gl_omxplayer = OMXPlayer(file, ['--alpha', str(alpha), '--aspect-mode', self.gl_aspectMode])
+                #self.gl_omxplayer = OMXPlayer(file, ['--alpha', str(alpha), '--aspect-mode', self.gl_aspectMode])
+                self.gl_omxplayer = OMXPlayer(file, omxplayer_cmdlin) # 2017-11-25 schlizbaeda V0.2.2
             except:
                 # Diese Exception tritt z.B. auf, wenn eine ungültige Mediadatei aufgerufen wird
                 print('Fehler beim Laden der Datei ' + file)
@@ -747,7 +761,7 @@ class YAMuPlay(object):
             # omxplayer läuft:
             self.gl_omxplayerStopevent = True # bewirkt komplettes Ende der Playlist
             self.gl_omxplayer.stop()          # beendet die Wiedergabe des aktuellen Titels
-        print(self.spinAlpha.get()) # DEBUG!
+        #print(self.spinAlpha.get()) # DEBUG!
             
     def spinAlpha_command(self):
         # 2016-11-20 schlizbaeda v0.2: Ereignishandler für das allgemeine command-Ereignis aus dem "Konstruktor" von spinAlpha
@@ -849,7 +863,8 @@ class YAMuPlay(object):
                 self.gl_trvMediadirFoundIndex = 0
             if self.gl_trvMediadirFoundList != []: # auf nicht-leere Liste prüfen
                 self.trvMediadir.see(self.gl_trvMediadirFoundList[self.gl_trvMediadirFoundIndex]) # aktuelle Fundstelle im Steuerelement zur Anzeige bringen (Baumstruktur öffnen und Element in den sichtbaren Bereich rücken)
-                self.trvMediadir.selection_set(self.gl_trvMediadirFoundList[self.gl_trvMediadirFoundIndex].replace(' ', '\ ')) # aktuelle Fundstelle auswählen (selektieren): WICHTIG: Die Leerzeichen im Dateinamen müssen mit '\' "entwertet" werden, da sonst die Dateinamen "zerhackt" werden! Die resultierenden Teilstrings sind keine gültigen Einträge des Treeview-Steuerelementes
+                #self.trvMediadir.selection_set(self.gl_trvMediadirFoundList[self.gl_trvMediadirFoundIndex].replace(' ', '\ ')) # aktuelle Fundstelle auswählen (selektieren): WICHTIG: Die Leerzeichen im Dateinamen müssen mit '\' "entwertet" werden, da sonst die Dateinamen "zerhackt" werden! Die resultierenden Teilstrings sind keine gültigen Einträge des Treeview-Steuerelementes
+                self.trvMediadir.selection_set(self.gl_trvMediadirFoundList[self.gl_trvMediadirFoundIndex]) # obige Anweisung ist ein Schmarrn!
                 self.gl_trvMediadirFoundIndex += 1
                 if self.gl_trvMediadirFoundIndex >= len(self.gl_trvMediadirFoundList): self.gl_trvMediadirFoundIndex = 0
             else:
@@ -1167,6 +1182,12 @@ class YAMuPlay(object):
         print(self.gl_appName + ' [Parameter] [Mediadatei(en)]')
         print()
         print('Parameter:')
+        print('  -o <audio>   Auswahl des Gerätes für die Audioausgabe')
+        print('  -o hdmi')
+        print('  -o local')
+        print('  -o both')
+        print('  -o alsa[:device]')
+        print()
         print('  -f <bool>    "full screen"')
         print('  -f 0         False: Videoanzeige in einem Fenster')
         print('  -f 1         True:  Videoanzeige als Vollbild')

@@ -62,13 +62,19 @@ Eine ausführliche Anleitung befindet sich in ./latex/YAMuPlay.pdf
 
 Beim Start von ./yamuplay.py im Terminalfenster erscheint im Terminal folgende Kurzanleitung:
 ```shell
-YAMuPlay V0.2.1
-Yet Another Music Player -- Version 0.2.1
+YAMuPlay V0.2.2
+Yet Another Music Player -- Version 0.2.2
 
 Aufruf:
 YAMuPlay [Parameter] [Mediadatei(en)]
 
 Parameter:
+  -o <audio>   Auswahl des Gerätes für die Audioausgabe
+  -o hdmi
+  -o local
+  -o both
+  -o alsa[:device]
+
   -f <bool>    "full screen"
   -f 0         False: Videoanzeige in einem Fenster
   -f 1         True:  Videoanzeige als Vollbild
@@ -136,14 +142,22 @@ yamuplay V0.2.1
 * lokale Kopien der verwendeten Versionsstände der anderen GitHub-Repositorys aufgenommen
 * Korrekturen kleinerer Laufzeitfehler
 
+04.01.2018:
+yamuplay V0.2.2
+Neuer Kommandozeilenparameter -o <audio>:
+Die neuen Versionen des omxplayers unterstützen jetzt auch die Audioausgabe 
+über ALSA. Eine sauber eingerichtete Soundkarte (USB, I²S) kann jetzt
+verwendet werden. Wichtig für den nächsten Faschingswagen :-)
+
 ## TODO's:
 Ich plane, folgende Punkte in einer künftigen Version einzubauen:
 * Scrollbalken für Playlist einfügen
 * Drag+Drop für Playlists
 * Fortschrittsbalken für aktuellen Titel aktivieren
 * Anzeige von Titelnummer und aktueller Laufzeit (wie beim echten CD-Spieler)
-* Lautstärke über omxplayer einstellen
+* Lautstärke über omxplayer einstellen (ab v0.2.2 über ALSA gelöst)
 * omxplayer-eigenes Fading beseitigen (falls möglich)
 * Erkennung anderer USB-Gerätetypen (z.B. Smartphones) , nicht nur klassische Speichergeräte (mass storage device)
 * Einlesevorgang bei riesigen USB-Speichern optimieren (Hintergrundthread?)
 * Bilder (*.JPG, *.PNG etc.) in Form einer Diashow anzeigen
+* Bluetooth-Empfang von Smartphones, um Spotify-Musik abspielen zu können
