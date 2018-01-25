@@ -3,7 +3,7 @@ YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2.2
 
 ## Hinweis zur aktuellen Version V0.2.2
 YAMuPlay nutzt folgende externe Module:
-* python3-dbus, Version unbekannt
+* python3-dbus, V1.2.4
 * https://github.com/willprice/python-omxplayer-wrapper.git, V0.2.3
 * https://github.com/pyudev/pyudev.git, V0.21.0
 * https://github.com/ahupp/python-magic.git, V0.4.13
@@ -36,7 +36,7 @@ cd yamuplay
 chmod 755 yamuplay.py
 ```
 
-python3-dbus V? (MIT)
+python3-dbus V1.2.4 (MIT)
 ```shell
 cd /home/pi/yamuplay
 sudo apt-get install python3-dbus
@@ -61,15 +61,15 @@ sudo python3 setup.py install
 ```
 
 ## Anleitung
-Eine ausführliche Anleitung befindet sich in ./latex/YAMuPlay.pdf
+Eine ausführliche Anleitung befindet sich in [`latex/YAMuPlay.pdf`](https://github.com/schlizbaeda/yamuplay/blob/master/latex/YAMuPlay.pdf)
 
-Beim Start von ./yamuplay.py im Terminalfenster erscheint im Terminal folgende Kurzanleitung:
+Beim Start von `./yamuplay.py` im Terminalfenster erscheint im Terminal folgende Kurzanleitung:
 ```shell
-YAMuPlay V0.2.2
-Yet Another Music Player -- Version 0.2.2
+YAMuPlay V0.3
+Yet Another Music Player -- Version 0.3
 
 Aufruf:
-YAMuPlay [Parameter] [Mediadatei(en)]
+yamuplay.py [Parameter] [Mediadatei(en)]
 
 Parameter:
   -o <audio>   Auswahl des Gerätes für die Audioausgabe
@@ -109,22 +109,26 @@ Parameter:
 
   -dx <pixel>  X-Offset zwischen Videodarstellung (GPU) und Videofenster (CPU)
   -dy <pixel>  Y-Offset zwischen Videodarstellung (GPU) und Videofenster (CPU)
-               Mein 24"-Drexfernseher hat eine Auflösung von 1824x984 Pixel,
+               Mein 24"-Drexfernseher hat eine Auflösung von 1824x984 Pixeln,
                über EDID(?) meldet er aber 1920x1080! Dadurch fehlen in X- und
                Y-Richtung jeweils 96 Pixel. Das Video ist gegenüber dem Fenster
                in jede Richtung um 48 Pixel (96/2) verschoben.
                Mit -dx 48 und -dy 48 kann das kompensiert werden.
-               Kein Schaden ohne Nutzen :-)
+               --> Dies scheint offenbar bei mehreren Fernsehern so zu sein...
+                   again what learned: Kein Schaden ohne Nutzen :-)
 
 Tastaturbelegung:
-  F1:   Anzeige einer Aboutbox (Menüpunkt Hilfe-->Info)
-  F2:   Debugausgabe im Konsolenfenster: def omxplayerDebugPrint(self):
-  F9:   Transparenz auf Defaultwert setzen (Kommandozeilenparameter -alpha)
-  F10:  Öffnen des Menüs (offenbar ein internes TKinter-Feature) 
-  F11:  Wechsel zwischen Videoanzeige im Fenster und Vollbild
-  F12:  Wechsel der "aspect modes": letterbox, fill, stretch
+  F1:    Anzeige einer Aboutbox (Menüpunkt Hilfe-->Info)
+  F2:    Debugausgabe im Konsolenfenster: def omxplayerDebugPrint(self):
+  F3:    Dateisuche
+  F5:    Playlist aktualisieren (laufenden Titel auswählen)
+  F9:    Transparenz auf Defaultwert setzen (Kommandozeilenparameter -alpha)
+  F10:   Öffnen des Menüs (offenbar ein internes TKinter-Feature) 
+  F11:   Wechsel zwischen Videoanzeige im Fenster und Vollbild
+  F12:   Wechsel der "aspect modes": letterbox, fill, stretch
+  DEL:   Löschen des markierten Titels aus der Playlist
 
-Copyright (C) 2016 - 2017 by schlizbaeda (GNU GPL v3)
+Copyright (C) 2016 - 2018 by schlizbaeda (GNU GPL v3)
 ```
 
 ## Historie:
@@ -152,15 +156,27 @@ Die neuen Versionen des omxplayers unterstützen jetzt auch die Audioausgabe
 über ALSA. Eine sauber eingerichtete Soundkarte (USB, I²S) kann somit
 verwendet werden. Wichtig für den nächsten Faschingswagen :-)
 
+25.01.2018:
+yamuplay V0.3 (Version für den Faschingswagen am 04. und 11.02.2018)
+* Bugfix: 
+  Die Menüpunkte "Vollbild" und "AspectMode" lieferten eine Fehlermeldung,
+  wenn sie für eine Audiodatei aufgerufen wurden.
+* vertikale Scrollbalken in trvMediadir (Verzeichnisbaum) und lstPlaylist
+* Drag+Drop von trvMediadir nach lstPlaylist:
+  Ermöglicht das Einfügen von Mediadateien an der gewünschten Stelle
+* Neue Tastenfunktionen:
+  F3:  Dateisuche (wie Schaltfläche "suchen")
+  F5:  Playlist aktualisieren (laufenden Titel auswählen)
+  DEL: ausgewählten Eintrag in der Playlist entfernen
+  
 ## TODO's:
 Ich plane, folgende Punkte in einer künftigen Version einzubauen:
-* Scrollbalken für Playlist einfügen
-* Drag+Drop für Playlists
 * Fortschrittsbalken für aktuellen Titel aktivieren
 * Anzeige von Titelnummer und aktueller Laufzeit (wie beim echten CD-Spieler)
-* Lautstärke über omxplayer einstellen (ab v0.2.2 über ALSA gelöst)
-* omxplayer-eigenes Fading beseitigen (falls möglich)
+* Lautstärke über omxplayer einstellen --> ab v0.2.2 über ALSA gelöst
+* omxplayer-eigenes Fading beseitigen (falls möglich) --> in den neuen Versionen nicht mehr vorhanden
 * Erkennung anderer USB-Gerätetypen (z.B. Smartphones) , nicht nur klassische Speichergeräte (mass storage device)
 * Einlesevorgang bei riesigen USB-Speichern optimieren (Hintergrundthread?)
 * Bilder (*.JPG, *.PNG etc.) in Form einer Diashow anzeigen
 * Bluetooth-Empfang von Smartphones, um Spotify-Musik abspielen zu können
+* Ergänzend alle offenen Punkte aus der LaTeX-Dokumentation (Kapitel 2.3)

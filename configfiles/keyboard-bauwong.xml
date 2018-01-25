@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyboard>
+
+<!-- Diese Datei muss in das Verzeichnis /usr/local/share/matchbox-keyboard kopiert werden. -->
+
+<layout id="default keyboard">
+  <!-- Reihe 1: ESC, Funktionstatsten --> 	
+  <row>
+    <key width="1500" fill="false">
+      <default display="Esc" action="escape" />
+    </key>
+    <space width="500" extended="true"/>
+
+    <key width="1000" fill="false">
+      <default display="F1" action="f1" />
+    </key>
+    <key width="1000" fill="false">
+      <default display="F2" action="f2" />
+    </key>
+    <key width="1000" fill="false">
+      <default display="F3" action="f3" />
+    </key>
+    <key width="1000" fill="false">
+      <default display="F4" action="f4" />
+    </key>
+    <space width="250" extended="true"/>
+
+    <key width="1000" fill="false">
+      <default display="F5" action="f5" />
+    </key>
+    <key width="1000" fill="false">
+      <default display="F6" action="f6" />
+    </key>
+    <key width="1000" fill="false">
+      <default display="F7" action="f7" />
+    </key>
+    <key width="1000" fill="false">
+      <default display="F8" action="f8" />
+    </key>
+    <space width="250" extended="true"/>
+
+    <key width="1000" fill="false">
+      <default display="F9" action="f9" />
+    </key>
+    <key width="1500" fill="false">
+      <default display="F10" action="f10" />
+    </key>
+    <key width="1500" fill="false">
+      <default display="F11" action="f11" />
+    </key>
+    <key width="1500" fill="false">
+      <default display="F12" action="f12" />
+    </key>
+  </row>
+  <!-- Reihe 2: Zifferntasten -->
+  <row>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="^" action="xkeysym:dead_circumflex" />
+      <shifted display="°" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="1" />
+      <shifted display="!" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="2" />
+      <shifted display='"' />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="3" />
+      <shifted display="§" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="4" />
+      <shifted display="$" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="5" />
+      <shifted display="%" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="6" />
+      <shifted display="&amp;" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="7" />
+      <shifted display="/" action="xkeysym:slash"/>
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="8" />
+      <shifted display="(" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="9" />
+      <shifted display=")" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="0" />
+      <shifted display="=" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="ß" />
+      <shifted display="?" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="´" action="xkeysym:dead_acute" />
+      <shifted display="`" action="xkeysym:dead_grave" />
+    </key>
+    <key width='3000'>
+      <default display="image:/usr/local/share/matchbox-keyboard/key-backspace.png" action="backspace" />
+    </key>
+  </row>
+  <!-- Reihe 3: QWERTZ -->
+  <row>
+    <key width="1500">
+      <default display="image:/usr/local/share/matchbox-keyboard/arrows.png" action="tab" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="q" />
+      <shifted display="Q" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="w" />
+      <shifted display="W" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="e" />
+      <shifted display="E" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="r" />
+      <shifted display="R" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="t" />
+      <shifted display="T" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="z" />
+      <shifted display="Z" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="u" />
+      <shifted display="U" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="i" />
+      <shifted display="I" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="o" />
+      <shifted display="O" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="p" />
+      <shifted display="P" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="ü" />
+      <shifted display="Ü" />
+    </key>
+    <key width="1000" obey-caps='true' fill='false'>
+      <default display="+" />
+      <shifted display="*" />
+    </key>
+    <key width="2500"> <!-- Enter -->
+      <default display="image:/usr/local/share/matchbox-keyboard/return.png" action="return"/>
+    </key>
+  </row>  
+  <!-- Reihe 4 -->
+  <row>
+    <space width='1000' extended='true'/>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="@" />
+      <shifted display="€" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="a" />
+      <shifted display="A" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="s" />
+      <shifted display="S" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="d" />
+      <shifted display="D" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="f" />
+      <shifted display="F" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="g" />
+      <shifted display="G" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="h" />
+      <shifted display="H" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="j" />
+      <shifted display="J" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="k" />
+      <shifted display="K" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="l" />
+      <shifted display="L" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="ö" />
+      <shifted display="Ö" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="ä" />
+      <shifted display="Ä" />
+    </key>
+    <key width='1000' obey-caps='true' fill='false'>
+      <default display="#" />
+      <shifted display="'" />
+    </key>
+    <!-- anstelle einer Taste: -->
+    <space width='2000' extended='true'/>
+  </row>
+  <!-- Reihe 5 -->
+  <row>
+    <key width="1500"> <!-- Shift -->
+      <default display="image:/usr/local/share/matchbox-keyboard/shift.png" action="modifier:shift" />
+      <caps display="image:/usr/local/share/matchbox-keyboard/shift_caps.png" action="modifier:shift" />
+    </key>
+    <key obey-caps='true' fill='false'>
+      <default display="&lt;" action="xkeysym:less" />
+      <shifted display="&gt;" action="xkeysym:greater" />
+    </key>
+    <key obey-caps='true' fill='false'>
+      <default display="y" />
+      <shifted display="Y" />
+    </key>
+    <key obey-caps='true' fill='false'>
+      <default display="x" />
+      <shifted display="X" />
+    </key>
+    <key obey-caps='true' fill='false'>
+      <default display="c" />
+      <shifted display="C" />
+    </key>
+    <key obey-caps='true' fill='false'>
+      <default display="v" />
+      <shifted display="V" />
+    </key>
+    <key obey-caps='true' fill='false'>
+      <default display="b" />
+      <shifted display="B" />
+    </key>
+    <key obey-caps='true' fill='false'>
+      <default display="n" />
+      <shifted display="N" />
+    </key>
+    <key obey-caps='true' fill='false'>
+      <default display="m" />
+      <shifted display="M" />
+    </key>
+    <key fill='false'>
+      <default display="," />
+      <shifted display=";" />
+    </key>
+    <key fill='false'>
+      <default display="." />
+      <shifted display=":" />
+    </key>
+    <key fill='false'>
+      <default display="-" />
+      <shifted display="_" />
+    </key>
+
+    <!-- anstelle einer Taste: -->
+    <space width="1500" extended="true"/>
+    <key>
+      <default display="↑" action="up" />
+    </key>
+    <space width="1000" extended="true"/>
+  </row>
+  <!-- Reihe 6: Leertaste -->
+  <row>
+    <space width="2300" extended="true"/>
+    <key width="11000"> <!-- Leertaste -->
+      <default display=" " action="space" />
+    </key>
+    <space width="1000" extended="true"/>
+
+    <key width="1000">
+      <default display="←" action="left" />
+    </key>
+    <key width="1000">
+      <default display="↓" action="down" />
+    </key>
+    <key width="1000">
+      <default display="→" action="right" />
+    </key>
+  </row>
+
+</layout>
+
+</keyboard>

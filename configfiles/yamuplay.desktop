@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=0.2.2
+Name=yamuplay
+Comment=Mediaplayer für den Faschingswagen vom Bauwong n.e.V.
+Path=/home/pi/yamuplay
+TryExec=/home/pi/yamuplay/yamuplay.py
+Exec=/home/pi/yamuplay/yamuplay.py
+Icon=/usr/share/pixmaps/pimixer.xpm
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=true

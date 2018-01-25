@@ -3,7 +3,7 @@
 
 
 #                 YAMuPlay - Yet Another Music Player
-#                 Copyright (C) 2016-2017 schlizbaeda
+#                 Copyright (C) 2016-2018 schlizbaeda
 #
 # YAMuPlay is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,8 +26,7 @@
 # paradigm) into object-oriented python code. That made it much easier
 # to maintain this project.
 #   http://roxxs.org/index.php/author/meigrafd/
-#   http://www.forum-raspberrypi.de/User-meigrafd
-#
+#   https://forum-raspberrypi.de/user/5394-meigrafd/
 #
 # YAMuPlay uses the following modules:
 # ------------------------------------
@@ -66,7 +65,7 @@ import sys    # 2017-08-14 schlizbaeda V0.2: notwendig, um die Kommandozeilenpar
 import magic  # 2017-08-14 schlizbaeda V0.2: notwendig, um die "Magic Number" (Dateityp) einer Datei zu ermitteln
 import copy   # 2017-09-20 schlizbaeda V0.2.1: Modul zum ECHTEN Kopieren von veränderlichen Datentypen ("mutable", z.B. Listen)
 import os
-import subprocess
+#import subprocess
 import time
 from omxplayer import OMXPlayer
 
@@ -86,7 +85,7 @@ class YAMuPlay(object):
     def __init__(self, PATH = '/media/pi'):  # TODO: Unterscheidung wheezy (/media) und jessie (/media/pi)     
         # globale Variablen mit Vorbelegung:
         self.gl_appName = 'YAMuPlay'
-        self.gl_appVer = '0.2.2'
+        self.gl_appVer = '0.3'
         
         self.GL_PATHSEPARATOR = '/'          # TODO: os.path.sep() liefert das Pfad-Trennzeichen, unter LINUX '/'
         self.gl_MediaDir = PATH
@@ -272,19 +271,32 @@ class YAMuPlay(object):
         #TODO: #self.pwMediadir.add(self.trvMediadir, minsize = 610) # Die Höhe (610 Pixel) des Playlist-Fensters ist hier auf eine Gesamthöhe von 720 Pixeln abgestimmt
         self.pwMediadir.add(self.frMediadirFind)
         # unten:
-        self.trvMediadir = tkinter.ttk.Treeview(self.pwMediadir, show = 'tree') # show = 'tree': nur den Inhalt anzeigen, nicht die Überschriftsfeld(er) für die Spalten des Steuerelementes
+        self.frMediadir = tkinter.Frame(self.pwMediadir)#, bg = 'yellow')
+        self.frMediadir.pack(fill = 'both', expand = 'yes')
+        self.ysbMediadir = tkinter.Scrollbar(self.frMediadir, orient = tkinter.VERTICAL)
+        self.trvMediadir = tkinter.ttk.Treeview(self.frMediadir, show = 'tree', xscrollcommand = None, yscrollcommand = self.ysbMediadir.set) # show = 'tree': nur den Inhalt anzeigen, nicht die Überschriftsfeld(er) für die Spalten des Steuerelementes
         #self.trvMediadir.font = self.fileFont # beißt nicht an!
-        self.pwMediadir.add(self.trvMediadir)
+        self.ysbMediadir['command'] = self.trvMediadir.yview
+        self.trvMediadir.pack(side = 'left', expand = 'yes', fill = 'both')#, fill = 'both', expand = 'yes')
+        self.ysbMediadir.pack(side = 'left', anchor = tkinter.W, fill = tkinter.Y)
+        # Supertolle Wurst:
+        #   mit .pack(...) lässt sich der horizontale Scrollbalken nicht unter dem anderen Schmarrn (trvMediadir+vertikaler Scrollbalken) platzieren
+        #   und mit .grid() im Frame funktioniert die Ausdehnung mit expand/sticky nicht!
+        #self.xsbMediadir = tkinter.Scrollbar(self.frMediadir, orient = tkinter.HORIZONTAL)
+        #self.xsbMediadir.pack(side = tkinter.BOTTOM)
+        #self.xsbMediadir['command'] = self.trvMediadir.xview
+        self.pwMediadir.add(self.frMediadir)
         self.pwMainpane.add(self.pwMediadir)
 
         # rechte Seite von pwMainpane:
         # Listbox-Steuerelement mit Playlist und Schaltflächen für den Mediaplayer
-        #   oben:  Schaltflächen für den Mediaplayer (Play/Pause, seek, prev, next, Stop)
-        #   Mitte: Fortschrittsbalken für aktive Mediendatei
-        #   unten: Listbox-Steuerelement (Playlist), Schaltflächen für "Verschieben" + "Entfernen"
+        #   Zeile 1: Schaltflächen für den Mediaplayer (Play/Pause, seek, prev, next, Stop)
+        #   zeile 2: Transparenz (alpha-Wert)
+        #   Zeile 3: Fortschrittsbalken für aktive Mediendatei
+        #   Zeile 4: Listbox-Steuerelement (Playlist), Schaltflächen für "Verschieben" + "Entfernen"
         self.pwPlayer = tkinter.PanedWindow(self.pwMainpane, orient = 'vertical', sashwidth = 0) # sashwidth=0: Breite der Trennlinie auf 0 setzen, damit sie nicht verschoben werden kann
         self.pwPlayer.pack()#fill = 'both', expand = 'yes')
-        # oben: Schaltflächen für Mediaplayer:
+        # Zeile 1: Schaltflächen für Mediaplayer
         self.frPlayerbuttons = tkinter.Frame(self.pwPlayer)
         self.frPlayerbuttons.pack(fill = 'none')
         self.butPlayPause = tkinter.Button(self.frPlayerbuttons, font = self.monoFont)
@@ -298,40 +310,51 @@ class YAMuPlay(object):
         self.butPrev.pack(side = 'left')
         self.butNext = tkinter.Button(self.frPlayerbuttons, font = self.monoFont, text = '>>|')
         self.butNext.pack(side = 'left')
-        self.butStop = tkinter.Button(self.frPlayerbuttons, font = self.monoFont, text = 'Stop')
+        self.butStop = tkinter.Button(self.frPlayerbuttons, font = self.monoFont, text = ' □ ') # '□': U+25A1(9633) / '■': U+25A0(9632) / 'Stop')
         self.butStop.pack(side = 'left')
-        self.lblAlpha = tkinter.Label(self.frPlayerbuttons, font = self.fileFont, text = '   Transparenz:')
-        self.lblAlpha.pack(side = 'left')
-        #self.spinAlpha = tkinter.Spinbox(self.frPlayerbuttons, values = (0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255))
-        self.spinAlpha = tkinter.Spinbox(self.frPlayerbuttons, width = 4, from_ = 0, to = 255, increment = 15, font = self.fileFont, command = self.spinAlpha_command) # width = Anzahl der dargestellten Zeichen        #self.spinAlpha = tkinter.Spinbox(self.frPlayerbuttons, width = 4, from_ = 0, to = 255, increment = 15, font = self.fileFont # width = Anzahl der dargestellten Zeichen
+        self.pwPlayer.add(self.frPlayerbuttons)
+        # Zeile 2: Transparenz (alpha-Wert)
+        self.frAlpha = tkinter.Frame(self.pwPlayer)
+        self.frAlpha.pack(fill = 'none')
+        self.lblAlpha = tkinter.Label(self.frAlpha, font = self.fileFont, text = 'Transparenz:')
+        self.lblAlpha.grid(column = 0, row = 0) #self.lblAlpha.pack(side = 'left')
+        #self.spinAlpha = tkinter.Spinbox(self.frAlpha, values = (0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255))
+        self.spinAlpha = tkinter.Spinbox(self.frAlpha, width = 4, from_ = 0, to = 255, increment = 15, font = self.fileFont, command = self.spinAlpha_command) # width = Anzahl der dargestellten Zeichen        #self.spinAlpha = tkinter.Spinbox(self.frPlayerbuttons, width = 4, from_ = 0, to = 255, increment = 15, font = self.fileFont # width = Anzahl der dargestellten Zeichen
         self.spinAlpha.delete(0, tkinter.END)          # Vorbelegung löschen
         self.spinAlpha.insert(0, self.gl_alphaDefault) # und Startwert eintragen
-        self.spinAlpha.pack(side = 'left')
-        #TODO: #self.butFullscreen = tkinter.Button(self.frPlayerbuttons, font = self.monoFont, text = 'Fullscreen')
-        #TODO: #self.butFullscreen.pack(side = 'left')
-        self.pwPlayer.add(self.frPlayerbuttons)
-        # Mitte: Fortschrittsbalken
-        sepperl = tkinter.IntVar()
-        sepperl.set(5)
-        self.progbarMedia = tkinter.ttk.Progressbar(self.pwPlayer, mode = 'determinate', variable = sepperl)
-        self.progbarMedia.pack()
-        self.pwPlayer.add(self.progbarMedia)
-        # unten: Playlist und dazugehörige Schaltflächen "Verschieben" + "Entfernen":
+        self.spinAlpha.grid(column = 1, row = 0, pady = 10) #self.spinAlpha.pack(side = 'left')
+        self.pwPlayer.add(self.frAlpha)
+        # Zeile 3: Fortschrittsbalken
+        self.scaleMedia = tkinter.Scale(self.pwPlayer, from_ = 0, to_ = 100, orient = tkinter.HORIZONTAL, command = self.scaleMedia_Move)
+        self.scaleMedia.pack()
+        self.pwPlayer.add(self.scaleMedia)
+        # Zeile 4: Playlist mit vertikaler Scrollbar und dazugehörige Schaltflächen "Verschieben" + "Entfernen":
         # --> unschön, aber bei self.pwPlaylist.add(...) bekommt immer das letzte hinzugefügte Unter-Widget den übrigen Platz (hier self.frPlaylistButtons)
-        self.pwPlaylist = tkinter.PanedWindow(self.pwPlayer, orient = 'horizontal', sashwidth = 10)  # sashwidth=0: Breite der Trennlinie auf 0 setzen, damit sie nicht verschoben werden kann
+        self.pwPlaylist = tkinter.PanedWindow(self.pwPlayer, orient = 'horizontal', sashwidth = 0)  # sashwidth=0: Breite der Trennlinie auf 0 setzen, damit sie nicht verschoben werden kann
         self.pwPlaylist.pack()#fill = 'both', expand = 'yes')
-        self.lstPlaylist = tkinter.Listbox(self.pwPlaylist, font = self.fileFont, selectmode = tkinter.BROWSE, xscrollcommand = True, yscrollcommand = True)
-        self.lstPlaylist.pack(fill = 'both', expand = 'yes')
-        self.pwPlaylist.add(self.lstPlaylist)
+        self.frPlaylist = tkinter.Frame(self.pwPlaylist)#, bg = 'yellow')
+        self.frPlaylist.pack(fill = 'both', expand = 'yes')
+        self.ysbPlaylist = tkinter.Scrollbar(self.frPlaylist, orient = tkinter.VERTICAL)
+        self.lstPlaylist = tkinter.Listbox(self.frPlaylist, font = self.fileFont, selectmode = tkinter.BROWSE, xscrollcommand = None, yscrollcommand = self.ysbPlaylist.set)
+        self.ysbPlaylist['command'] = self.lstPlaylist.yview
+        self.lstPlaylist.pack(side = 'left', expand = 'yes', fill = 'both')#, fill = 'both', expand = 'yes')
+        self.ysbPlaylist.pack(side = 'left', anchor = tkinter.W, fill = tkinter.Y)
+        # Supertolle Wurst:
+        #   mit .pack(...) lässt sich der horizontale Scrollbalken nicht unter dem anderen Schmarrn (lstPlaylist+vertikaler Scrollbalken) platzieren
+        #   und mit .grid() im Frame funktioniert die Ausdehnung mit expand/sticky nicht!
+        #self.xsbPlaylist = tkinter.Scrollbar(self.frPlaylist, orient = tkinter.HORIZONTAL)
+        #self.xsbPlaylist.pack(side = tkinter.BOTTOM)
+        #self.xsbPlaylist['command'] = self.lstPlaylist.xview
         self.frPlaylistButtons = tkinter.Frame(self.pwPlaylist)
-        self.frPlaylistButtons.pack(anchor = 'e')#fill = 'none', expand = 'no')
+        self.frPlaylistButtons.pack(side = 'right', anchor = tkinter.W)
         self.butPlaylistMoveUp = tkinter.Button(self.frPlaylistButtons, font = self.monoFont, text = '^')
         self.butPlaylistMoveUp.pack()
         self.butPlaylistRemove = tkinter.Button(self.frPlaylistButtons, font = self.monoFont, text = 'X')
         self.butPlaylistRemove.pack()
         self.butPlaylistMoveDn = tkinter.Button(self.frPlaylistButtons, font = self.monoFont, text = 'v')
         self.butPlaylistMoveDn.pack()
-        #self.pwPlaylist.add(self.frPlaylistButtons)
+        self.pwPlaylist.add(self.frPlaylist)
+        
         self.pwPlayer.add(self.pwPlaylist)
         self.pwMainpane.add(self.pwPlayer)
         
@@ -364,8 +387,6 @@ class YAMuPlay(object):
                     arg = os.getcwd() + self.GL_PATHSEPARATOR + arg # relative Pfadangabe mit dem "current working directory" absolut machen
                 self.lstPlaylist.insert(tkinter.END, arg)
         
-        
-
         
     ##### Funktionen für omxplayer-Aufruf #####
     def omxplayerDebugPrint(self):
@@ -788,6 +809,9 @@ class YAMuPlay(object):
         print(event)
         self.spinAlpha_command()
 
+    # Fortschrittsbalken für aktuelle Mediadatei:
+    def scaleMedia_Move(self, value):
+        print('DEBUG: scaleMedia_Move(value=' + str(value) + ')')
 
     # Teil 2: Steuerung über die Playlist
     def lstPlaylist_Release(self, event): # --> Dient hier der Nachbildung eines toleranten Doppelklick-Ereignisses für Touchdisplays.
@@ -815,8 +839,8 @@ class YAMuPlay(object):
             self.gl_lstPlaylistClickedTime = clickedTime
             self.gl_lstPlaylistClickedItem = clickedItem
     
-    ##### Ereignishandler des Treeview-Steuerelementes #####
-    ##### und der Playlist ("Verschieben", "Löschen")  #####
+    ##### Ereignishandler des Treeview-Steuerelementes            #####
+    ##### und der Playlist ("Verschieben", "Löschen", Drag+Drop)  #####
     def trvMediadir_Click(self, event): # --> Dient hier der Nachbildung eines toleranten Doppelklick-Ereignisses für Touchdisplays.
         try:
             self.YAMuPlayGUI.update() # DoEvents
@@ -827,8 +851,8 @@ class YAMuPlay(object):
             clickedRow = self.trvMediadir.identify_row(event.y)
         except:
             clickedRow = ''
-        if clickedRow != '' and clickedRow == self.gl_trvMediadirClickedRow and clickedTime - self.gl_trvMediadirClickedTime < 1.0:
-            # die beiden letzten Klicks trafen das gleiche Treeview-Element innerhalb von 1 Sekunde:
+        if clickedRow != '' and clickedRow == self.gl_trvMediadirClickedRow and clickedTime - self.gl_trvMediadirClickedTime < 1.5:
+            # die beiden letzten Klicks trafen das gleiche Treeview-Element innerhalb von 1,5 Sekunden:
             # Doppelklick!
             for sel in self.trvMediadir.selection():
                 # Fallunterscheidung 'dir' oder 'fil'
@@ -844,6 +868,43 @@ class YAMuPlay(object):
             self.gl_trvMediadirClickedTime = clickedTime
             self.gl_trvMediadirClickedRow = clickedRow
 
+    def trvMediadir_ButtonRelease(self, event): # --> Dient hier der Nachbildung von "Drop" für Drag+Drop von trvMediadir nach lstPlaylist:
+        xMediadir = self.pwMediadir.winfo_x() + self.trvMediadir.winfo_x()
+        yMediadir = self.pwMediadir.winfo_y() + self.trvMediadir.winfo_y()
+        xPlaylist = self.pwPlayer.winfo_x() + self.pwPlaylist.winfo_x()  + self.lstPlaylist.winfo_x() - self.frAlpha.winfo_x()
+        yPlaylist = self.pwPlayer.winfo_y() + self.pwPlaylist.winfo_y()  + self.lstPlaylist.winfo_y() - self.frAlpha.winfo_y()
+        #print()
+        #print('DEBUG: RELEASE')
+        #print('DEBUG: trvMediadir abs:  x=' + str(xMediadir) + ', y=' + str(yMediadir) + ', width=' + str(self.trvMediadir.winfo_width()) + ', height=' + str(self.trvMediadir.winfo_height()))
+        #print('DEBUG:             rel:  x=' + str(self.trvMediadir.winfo_x()) + ', y=' + str(self.trvMediadir.winfo_y()))
+        #print('DEBUG: lstPlaylist abs:  x=' + str(xPlaylist) + ', y=' + str(yPlaylist) + ', width=' + str(self.lstPlaylist.winfo_width()) + ', height=' + str(self.lstPlaylist.winfo_height()))
+        #print('DEBUG:             rel:  x=' + str(self.lstPlaylist.winfo_x()) + ', y=' + str(self.lstPlaylist.winfo_y()))
+        #print('DEBUG: event             x=' + str(event.x) + ', y=' + str(event.y))
+        #print('DEBUG: event@lstPlaylist x=' + str(event.x - xPlaylist + xMediadir) + ', y=' + str(event.y - yPlaylist + yMediadir))
+        if event.x >= xPlaylist - xMediadir and event.x < xPlaylist - xMediadir + self.lstPlaylist.winfo_width() and \
+           event.y >= yPlaylist - yMediadir and event.y < yPlaylist - yMediadir + self.lstPlaylist.winfo_height():
+            #print('DEBUG: inside Playlist:')
+            curIndex = self.lstPlaylist.nearest(event.y - yPlaylist + yMediadir) # liefert -1, wenn die Liste in lstPlaylist leer ist, ansonsten nullbasierend den Listenindex
+            if curIndex < 0: curIndex = 0 # Wenn curIndex -1 ist wird die Auswahl wird mit .insert(curIndex) nicht hinzugefügt.
+            # Datenquelle ermitteln: Liste der selektierten Einträge aus trvMediadir
+            for sel in self.trvMediadir.selection():
+                # Fallunterscheidung 'dir' oder 'fil'
+                if self.trvMediadir.tag_has('dir', sel) == True:
+                    # Verzeichnis (Directory):
+                    pass
+                else:
+                    # normale Datei: hinzufügen
+                    self.lstPlaylist.insert(curIndex, self.gl_MediaDir + self.GL_PATHSEPARATOR + sel) # 2017-08-14 schlizbaeda V0.2: Den unvollständigen Pfad im Treeview-Steuerelement um self.gl_MediaDir ("/media/pi") erweitern
+                    self.lstPlaylist.select_clear(0, tkinter.END)  # alle Markierungen löschen
+                    self.lstPlaylist.select_set(curIndex)          # eingefügten Titel wählen
+                    if self.gl_omxplayerListindex >= curIndex:
+                        self.gl_omxplayerListindex += 1 # aktuellen Titel mitziehen!
+                    curIndex += 1 # wichtig, damit das nächste Element aus trvMediadir-Auswahl in der richtigen Reihenfolge in lstPlaylist eingefügt wird
+        else:
+            #print('DEBUG: outside Playlist')
+            pass
+            
+            
     def recursiveGetAllChildren(self, trv, item = '', depth = 0):
         children = trv.get_children(item)
         for child in children:
@@ -1072,14 +1133,16 @@ class YAMuPlay(object):
         print('Fullscreen: ' + str(self.gl_fullscreen))
         if not self.gl_omxplayer is None:
             # omxplayer läuft:
-            self.gl_omxplayer.set_aspect_mode(self.gl_aspectMode)
-            if self.gl_fullscreen:
-                # Das Video soll als Vollbild angezeigt werden:
-                self.gl_omxplayer.set_video_pos(0, 0, 0, 0)
-                self.Videobox.withdraw() # Toplevel-Widget unsichtbar machen
-            else:
-                # Das Video soll in der Fensteransicht dargestellt werden:
-                self.omxplayerFitToplevel()
+            if self.gl_omxplayer_GetWidth() + self.gl_omxplayer_GetHeight() + self.gl_omxplayer_GetAspect() > 0.0: #if self.gl_omxplayer.width() + self.gl_omxplayer.height() + self.gl_omxplayer.aspect_ratio() > 0.0: #if self.gl_omxplayer._get_properties_interface().ResWidth() + self.gl_omxplayer._get_properties_interface().ResHeight() + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0: # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methoden ._get_properties_interface().*() durch offizielle Methoden .*() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
+                # Es handelt sich um ein Video, weil die Videoabmessungen > 0 sind (Für MP3-Audiodateien liefert omxplayer.bin ResWidth=0, ResHeight=0, Aspect=0.0)
+                self.gl_omxplayer.set_aspect_mode(self.gl_aspectMode)
+                if self.gl_fullscreen:
+                    # Das Video soll als Vollbild angezeigt werden:
+                    self.gl_omxplayer.set_video_pos(0, 0, 0, 0)
+                    self.Videobox.withdraw() # Toplevel-Widget unsichtbar machen
+                else:
+                    # Das Video soll in der Fensteransicht dargestellt werden:
+                    self.omxplayerFitToplevel()
 
     def mnuViewAspectMode_Click(self):
 		# 2016-11-20 schlizbaeda V0.2: Videodarstellung innerhalb der angegebenen Abmessungen: AspectMode ändern
@@ -1092,8 +1155,10 @@ class YAMuPlay(object):
         print('AspectMode: ' + self.gl_aspectMode) 
         if not self.gl_omxplayer is None:
             # omxplayer läuft:
-            self.gl_omxplayer.set_aspect_mode(self.gl_aspectMode)
-            self.Videobox.title(self.gl_omxplayer.get_source() + ' [' + self.gl_aspectMode + ']')
+            if self.gl_omxplayer_GetWidth() + self.gl_omxplayer_GetHeight() + self.gl_omxplayer_GetAspect() > 0.0: #if self.gl_omxplayer.width() + self.gl_omxplayer.height() + self.gl_omxplayer.aspect_ratio() > 0.0: #if self.gl_omxplayer._get_properties_interface().ResWidth() + self.gl_omxplayer._get_properties_interface().ResHeight() + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0: # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methoden ._get_properties_interface().*() durch offizielle Methoden .*() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
+                # Es handelt sich um ein Video, weil die Videoabmessungen > 0 sind (Für MP3-Audiodateien liefert omxplayer.bin ResWidth=0, ResHeight=0, Aspect=0.0)
+                self.gl_omxplayer.set_aspect_mode(self.gl_aspectMode)
+                self.Videobox.title(self.gl_omxplayer.get_source() + ' [' + self.gl_aspectMode + ']')
         
     def mnuViewBackground_Click(self): # 2017-08-14 schlizbaeda V0.2: Hintergrundfarbe einstellen
         try:
@@ -1118,7 +1183,7 @@ class YAMuPlay(object):
 
         # GPL v3 - Kurzversion, falls Datei nicht lesbar:
         GPLv3 = '                ' + self.gl_appName + ' - Yet Another Music Player\n' + \
-                '                Copyright (C) 2016-2017 schlizbaeda\n' + \
+                '                Copyright (C) 2016-2018 schlizbaeda\n' + \
                 '\n' + \
                 self.gl_appName + ' is free software: you can redistribute it and/or modify\n' + \
                 'it under the terms of the GNU General Public License as published by\n' + \
@@ -1159,7 +1224,7 @@ class YAMuPlay(object):
         lblDesc3.pack()
         lblDesc4 = tkinter.Label(AboutBox, text = 'entwickelt von schlizbäda', font = normalFont)
         lblDesc4.pack()
-        lblDesc5 = tkinter.Label(AboutBox, text = 'Copyright (C) 2016 - 2017', font = normalFont)
+        lblDesc5 = tkinter.Label(AboutBox, text = 'Copyright (C) 2016 - 2018', font = normalFont)
         lblDesc5.pack()
         lblDesc6 = tkinter.Label(AboutBox, text = 'e-mail: schlizbaeda@gmx.de', font = normalFont)
         lblDesc6.pack()
@@ -1179,7 +1244,7 @@ class YAMuPlay(object):
         print('Yet Another Music Player -- Version ' + self.gl_appVer)
         print()
         print('Aufruf:')
-        print(self.gl_appName + ' [Parameter] [Mediadatei(en)]')
+        print('yamuplay.py [Parameter] [Mediadatei(en)]')
         print()
         print('Parameter:')
         print('  -o <audio>   Auswahl des Gerätes für die Audioausgabe')
@@ -1219,22 +1284,28 @@ class YAMuPlay(object):
         print()
         print('  -dx <pixel>  X-Offset zwischen Videodarstellung (GPU) und Videofenster (CPU)')
         print('  -dy <pixel>  Y-Offset zwischen Videodarstellung (GPU) und Videofenster (CPU)')
-        print('               Mein 24"-Drexfernseher hat eine Auflösung von 1824x984 Pixel,')
+        print('               Mein 24"-Drexfernseher hat eine Auflösung von 1824x984 Pixeln,')
         print('               über EDID(?) meldet er aber 1920x1080! Dadurch fehlen in X- und')
         print('               Y-Richtung jeweils 96 Pixel. Das Video ist gegenüber dem Fenster')
         print('               in jede Richtung um 48 Pixel (96/2) verschoben.')
         print('               Mit -dx 48 und -dy 48 kann das kompensiert werden.')
-        print('               Kein Schaden ohne Nutzen :-)')
+        print('               --> Dies scheint offenbar bei mehreren Fernsehern so zu sein...')
+        print('                   again what learned: Kein Schaden ohne Nutzen :-)')
         print()
         print('Tastaturbelegung:')
-        print('  F1:   Anzeige einer Aboutbox (Menüpunkt Hilfe-->Info)')
-        print('  F2:   Debugausgabe im Konsolenfenster: def omxplayerDebugPrint(self):')
-        print('  F9:   Transparenz auf Defaultwert setzen (Kommandozeilenparameter -alpha)')
-        print('  F10:  Öffnen des Menüs (offenbar ein internes TKinter-Feature) ')
-        print('  F11:  Wechsel zwischen Videoanzeige im Fenster und Vollbild')
-        print('  F12:  Wechsel der "aspect modes": letterbox, fill, stretch')
+        print('  F1:    Anzeige einer Aboutbox (Menüpunkt Hilfe-->Info)')
+        print('  F2:    Debugausgabe im Konsolenfenster: def omxplayerDebugPrint(self):')
+        print('  F3:    Dateisuche')
+        print('  F5:    Playlist aktualisieren (laufenden Titel auswählen)')
+        print('  F9:    Transparenz auf Defaultwert setzen (Kommandozeilenparameter -alpha)')
+        print('  F10:   Öffnen des Menüs (offenbar ein internes TKinter-Feature) ')
+        print('  F11:   Wechsel zwischen Videoanzeige im Fenster und Vollbild')
+        print('  F12:   Wechsel der "aspect modes": letterbox, fill, stretch')
+        print('  DEL:   Löschen des markierten Titels aus der Playlist')
+        #print('  ENTER: entspricht Doppelklick') # TODO: Die Umsetzung wird vareckt: Steuerelement mit aktuellem Fokus ermitteln, entsprechende Fallunterscheidung in den Ereignishandler (bäh)...
+        #print('  SPACE: siehe ENTER')
         print()
-        print('Copyright (C) 2016 - 2017 by schlizbaeda (GNU GPL v3)')
+        print('Copyright (C) 2016 - 2018 by schlizbaeda (GNU GPL v3)')
         print()
         print()
 
@@ -1244,14 +1315,20 @@ class YAMuPlay(object):
         # 2016-11-20 schlizbaeda V0.2: Globales "KeyPress"-Ereignis für allgemeine Steuerung über die Tastatur
         #   F1: About-Box anzeigen
         #   F2: Debugausgaben jetzt anzeigen
+        #   F3: Dateisuche
+        #   F5: Playlist aktualisieren (laufenden Titel auswählen)
         #   F9: Alpha-Wert (Transparenz) auf Default-Wert setzen
         #  F10: öffnet das Menü --> offenbar eine interne TKinter-Geschichte 
         #  F11: Umschalten Vollbild/Fensteransicht
         #  F12: "AspectMode" wählen: "letterbox" | "fill" | "stretch"
+        #  DEL: Löschen des markierten Titels aus der Playlist
         if event.char == event.keysym:
             msg = 'Normal Key %r' % event.char
         elif len(event.char) == 1:
             msg = 'Punctuation Key %r (%r)' % (event.keysym, event.char)
+            if event.keysym == 'Delete':
+                # Löschen des markierten Titels aus der Playlist
+                self.butPlaylistRemove_Click(event)
         else:
             msg = 'Special Key %r' % event.keysym
             if event.keysym == 'F1':
@@ -1260,6 +1337,23 @@ class YAMuPlay(object):
             elif event.keysym == 'F2':
                 # Debugausgaben jetzt anzeigen
                 self.omxplayerDebugPrint()
+            elif event.keysym == 'F3':
+                # Dateisuche
+                self.butMediadirFind_Click(event) # Suche durchführen
+            elif event.keysym == 'F5':
+                # Playlist aktualisieren (laufenden Titel auswählen)
+                if self.gl_omxplayer is None:
+                    # omxplayer läuft nicht:
+                    idx = -1
+                else:
+                    # omxplayer läuft:
+                    idx = self.gl_omxplayerListindex # aktueller Titel
+                try:
+                    self.lstPlaylist.select_clear(0, tkinter.END) # alle Markierungen in der Playlist löschen
+                    if idx >= 0:
+                        self.lstPlaylist.select_set(idx)          # ermittelten Titel in der Playlist anzeigen (selektieren)
+                except:
+                    pass     
             elif event.keysym == 'F9':
                 # Alpha-Wert (Transparenz) auf Default-Wert setzen:
                 # Dient u.a. als "Rettung", wenn man den Alpha-Wert versehentlich auf 255 gestellt hat und die Steuerelemente "blind" nicht mehr findet...
@@ -1318,7 +1412,7 @@ class YAMuPlay(object):
         zu Problemen mit stdin(?): Die eingegebenen Zeichen werden nicht
         angezeigt!
         Wenn der omxplayer.bin läuft, wird er hier angehalten, kurz
-        gewartet und omxplayere.bin beendet. Die Wartezeit ist
+        gewartet und omxplayer.bin beendet. Die Wartezeit ist
         vermutlich notwendig, damit sich das Terminal wieder "fängt".
         Grund: ?
         """
@@ -1373,7 +1467,9 @@ class YAMuPlay(object):
         self.YAMuPlayGUI.bind('<KeyPress>', self.YAMuPlayGUI_KeyPress)
         #self.trvMediadir.bind('<<TreeviewSelect>>', self.trvMediadir_TreeviewSelect) # funzt!
         self.trvMediadir.bind('<Button-1>', self.trvMediadir_Click)
-        #self.trvMediadir.bind('<Double-1>', self.trvMediadir_DblClick)
+        #self.trvMediadir.bind('<Double-1>', self.trvMediadir_DblClick)       # wird im Ereignis <Button-1> manuell (über den Code) ausgewertet
+        #self.trvMediadir.bind('<ButtonPress>', self.trvMediadir_ButtonPress) # beißt sich mit dem Ereignis '<Button-1>': <Button-1> ist offenbar "stärker"
+        self.trvMediadir.bind('<ButtonRelease>', self.trvMediadir_ButtonRelease)
         self.entMediadirFind.bind('<KeyPress>', self.entMediadirFind_KeyPress)
         self.butMediadirFind.bind('<Button-1>', self.butMediadirFind_Click)
 
