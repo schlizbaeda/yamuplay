@@ -1,7 +1,7 @@
 # yamuplay
-YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.2.2
+YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.3
 
-## Hinweis zur aktuellen Version V0.2.2
+## Hinweis zur aktuellen Version V0.3
 YAMuPlay nutzt folgende externe Module:
 * python3-dbus, V1.2.4
 * https://github.com/willprice/python-omxplayer-wrapper.git, V0.2.3
