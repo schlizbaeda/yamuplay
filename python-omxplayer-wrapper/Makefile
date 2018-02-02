@@ -1,15 +1,27 @@
 PYTHON2:=python2
 PYTHON3:=python3
 
-.PHONY: check
-check: test
+.PHONY: init
+init:
+	pip install pipenv
+	pipenv install --dev
 
 .PHONY: test
 test:
+	nosetests \
+		--with-coverage \
+		--cover-erase \
+		--cover-xml \
+		--cover-branches \
+		--cover-package=omxplayer \
+		tests/unit
+
+.PHONY: test
+test-all:
 	tox
 
 .PHONY: dist
-dist: test
+dist: test-all
 	$(PYTHON3) setup.py bdist_wheel --universal
 
 dist-upload: clean-dist dist
@@ -22,3 +34,7 @@ clean-dist:
 .PHONY: doc
 doc:
 	$(MAKE) -C docs html
+
+.PHONY: doc-serve
+doc-serve: doc
+	cd docs/build/html && $(PYTHON3) -m http.server

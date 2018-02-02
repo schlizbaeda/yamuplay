@@ -1,10 +1,10 @@
 # yamuplay
-YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.3
+YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.3.1
 
-## Hinweis zur aktuellen Version V0.3
+## Hinweis zur aktuellen Version V0.3.1
 YAMuPlay nutzt folgende externe Module:
 * python3-dbus, V1.2.4
-* https://github.com/willprice/python-omxplayer-wrapper.git, V0.2.3
+* https://github.com/willprice/python-omxplayer-wrapper.git, V0.2.4
 * https://github.com/pyudev/pyudev.git, V0.21.0
 * https://github.com/ahupp/python-magic.git, V0.4.13
 
@@ -42,7 +42,7 @@ cd /home/pi/yamuplay
 sudo apt-get install python3-dbus
 ```
 
-python-omxplayer-wrapper V0.2.3 (LGPL v3)
+python-omxplayer-wrapper V0.2.4 (LGPL v3)
 ```shell
 cd /home/pi/yamuplay/python-omxplayer-wrapper
 sudo python3 setup.py install
@@ -65,8 +65,8 @@ Eine ausführliche Anleitung befindet sich in [`latex/YAMuPlay.pdf`](https://git
 
 Beim Start von `./yamuplay.py` im Terminalfenster erscheint im Terminal folgende Kurzanleitung:
 ```shell
-YAMuPlay V0.3
-Yet Another Music Player -- Version 0.3
+YAMuPlay V0.3.1
+Yet Another Music Player -- Version 0.3.1
 
 Aufruf:
 yamuplay.py [Parameter] [Mediadatei(en)]
@@ -86,7 +86,7 @@ Parameter:
   -a letterbox Vollständige Skalierung in das Videofenster ohne Verzerrung.
                Es entstehen Ränder an der zu großen Seite
   -a fill      Skalierung in das Videofenster auf die kleinere Kante.
-               zu große Bereiche werden abgeschnitten und sind unsichtbar.
+               Zu große Bereiche werden abgeschnitten und sind unsichtbar.
   -a stretch:  Anpassung an die Fenstergröße mit Verzerrung
 
   -k <bool>    "keep video size"
@@ -168,6 +168,16 @@ yamuplay V0.3 (Version für den Faschingswagen am 04. und 11.02.2018)
   F3:  Dateisuche (wie Schaltfläche "suchen")
   F5:  Playlist aktualisieren (laufenden Titel auswählen)
   DEL: ausgewählten Eintrag in der Playlist entfernen
+
+02.02.2018:
+yamuplay V0.3.1 (Version für den Faschingswagen am 04. und 11.02.2018)
+Bugfix:
+  Beim "wilden Doppelklicken" in der Playlist kam es beim Starten des
+  omxplayers mit der neuen Datei häufig zu Aufhängern, bei denen nicht einmal
+  `kill -9` half. Ein vernünftiges Abfangen von Exceptions in Kombination
+  mit wirklich kurzen Sleeps brachte Erfolg. Der genaue Grund ist unbekannt.
+  Wahrscheinlich waren es DBus-Hänger...
+
   
 ## TODO's:
 Ich plane, folgende Punkte in einer künftigen Version einzubauen:

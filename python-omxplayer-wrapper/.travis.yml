@@ -1,28 +1,52 @@
-dist: trusty
+# Use container based infra
 sudo: false
 language: python
 python:
-    - 2.7_with_system_site_packages
-      # Ideally I'd like to test with 3.6 but since 3.4 is the latest in
-      # trusty we have to use that instead
-    - 3.4_with_system_site_packages
+  - 2.7
+  - 3.4
+  - 3.5
+  - 3.6
 
 cache:
-    - pip
-    - apt
+  - pip
+  - apt
 
 addons:
   apt:
     packages:
-      - python-dbus
-      - python3-dbus
+      - dbus
+      - libdbus-1-dev
+      - libdbus-glib-1-dev
+
+before_install:
+  - env
+  - echo "Python diagnostic Information"
+  - pyenv --version
+  - pyenv versions
+  - pyenv global
+  - 'which -a python'
+  - python --version
+  - python-config --includes
+  - python-config --libs
+  - python-config --ldflags
+  - pip --version
+  - ls -l ~/virtualenv
 
 install:
-  - pip install -r requirements.txt
-  - pip install tox-travis
+  - pip install pipenv
+  - pipenv install --dev
 
 script:
-  - make check
+  - make test
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+env:
+  global:
+    # The dbus-python maintainer hit these bugs on travis, see his comments on the
+    # travis bug report: https://github.com/travis-ci/travis-ci/issues/6530
+    # See https://github.com/mitya57/secretstorage/blob/2636a47b45aff51a21dfaf1cbd9f1f3c1347f7f4/.travis.yml for an example workaround
+    # This is also a known issue and filed on the python bugtracker: https://bugs.python.org/issue7352
+    - 'PYTHON_LIBS="-L$(python-config --prefix)/lib $(python-config --libs)"'
+    - PY_ENABLE_SHARD=0

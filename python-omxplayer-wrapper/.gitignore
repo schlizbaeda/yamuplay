@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 
+# pyenv
+.python-version
+
 # C extensions
 *.so
 
@@ -57,3 +60,6 @@ docs/_build/
 .idea
 
 **/build
+
+# Vim
+*.swp

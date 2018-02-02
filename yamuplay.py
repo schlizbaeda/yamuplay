@@ -27,12 +27,17 @@
 # to maintain this project.
 #   http://roxxs.org/index.php/author/meigrafd/
 #   https://forum-raspberrypi.de/user/5394-meigrafd/
+# Further thanks to linusg from the German Raspberry Pi forum too.
+# He gave lots of useful hints due to python programming on 
+# github issue #1 which I'm going to implement in the next time... 
+#   https://linusgroh.de/
+#   https://github.com/linusg
 #
 # YAMuPlay uses the following modules:
 # ------------------------------------
 #
 # * python3-dbus             V?                               MIT
-# * python-omxplayer-wrapper V0.2.3                           LGPL v3
+# * python-omxplayer-wrapper V0.2.4                           LGPL v3
 # * pyudev                   V0.21.0                          LGPL v2.1
 # * python-magic             V0.4.13                          MIT
 #
@@ -45,16 +50,16 @@
 # 
 #   cd /home/pi/yamuplay
 #   sudo apt-get install python3-dbus # not part of YAMuPlay repository
-#   #git clone https://github.com/willprice/python-omxplayer-wrapper.git
-#   #git clone https://github.com/pyudev/pyudev.git
-#   #git clone https://github.com/ahupp/python-magic.git
 #
+#   #git clone https://github.com/willprice/python-omxplayer-wrapper.git
 #   cd /home/pi/yamuplay/python-omxplayer-wrapper
 #   sudo python3 setup.py install
 #
+#   #git clone https://github.com/pyudev/pyudev.git
 #   cd /home/pi/yamuplay/pyudev
 #   sudo python3 setup.py install
 #
+#   #git clone https://github.com/ahupp/python-magic.git
 #   cd /home/pi/yamuplay/python-magic
 #   sudo python3 setup.py install
 #
@@ -65,7 +70,6 @@ import sys    # 2017-08-14 schlizbaeda V0.2: notwendig, um die Kommandozeilenpar
 import magic  # 2017-08-14 schlizbaeda V0.2: notwendig, um die "Magic Number" (Dateityp) einer Datei zu ermitteln
 import copy   # 2017-09-20 schlizbaeda V0.2.1: Modul zum ECHTEN Kopieren von veränderlichen Datentypen ("mutable", z.B. Listen)
 import os
-#import subprocess
 import time
 from omxplayer import OMXPlayer
 
@@ -82,13 +86,13 @@ import pyudev
 
 ############ HAUPTPTOGRAMM ############ 
 class YAMuPlay(object):
-    def __init__(self, PATH = '/media/pi'):  # TODO: Unterscheidung wheezy (/media) und jessie (/media/pi)     
+    def __init__(self, mediapath = '/media/pi'): # TODO: Unterscheidung wheezy (/media) und jessie (/media/pi)     
         # globale Variablen mit Vorbelegung:
         self.gl_appName = 'YAMuPlay'
-        self.gl_appVer = '0.3'
+        self.gl_appVer = '0.3.1'
         
         self.GL_PATHSEPARATOR = '/'          # TODO: os.path.sep() liefert das Pfad-Trennzeichen, unter LINUX '/'
-        self.gl_MediaDir = PATH
+        self.gl_MediaDir = mediapath
         self.gl_quit = 0                     # globaler Merker für andere Threads, wenn Ctrl+C oder Alt+F4 (Programm beenden) gedrückt wurde
         self.gl_omxplayer = None             # Über dbus steuerbarer omxplayer
         self.gl_omxplayerListindex = -1      # globale Variable für die Routine omxplaylist initialisieren
@@ -521,8 +525,8 @@ class YAMuPlay(object):
         self.spinAlpha.delete(0, tkinter.END)
         self.spinAlpha.insert(0, alpha)
         # 1. Prüfen, ob omxplayer bereits läuft:
+        time.sleep(0.05) #v0.3.1: wichtig für self.gl_omxplayer.quit(), um zu verhindern, dass der omxplayer-Unterprozess so gach hängt, dass nicht einmal mehr ein (externer) kill -9 hilft!
         if not self.gl_omxplayer is None:
-            self.gl_omxplayer.stop()
             self.gl_omxplayer.quit()
             self.gl_omxplayer = None
             try:
@@ -545,11 +549,17 @@ class YAMuPlay(object):
             omxplayer_cmdlin.extend(['--alpha', str(alpha), '--aspect-mode', self.gl_aspectMode])
             print('cmdlin=' + str(omxplayer_cmdlin))
             try:
-                #self.gl_omxplayer = OMXPlayer(file, ['--alpha', str(alpha), '--aspect-mode', self.gl_aspectMode])
                 self.gl_omxplayer = OMXPlayer(file, omxplayer_cmdlin) # 2017-11-25 schlizbaeda V0.2.2
+            except SystemError: #v0.3.1: AUSLÖSENDE EXCEPTION für den Hänger der omxplayer-Unterprozesse
+                 #print('v0.3.1: SystemError (shice!)')
+                 time.sleep(0.05) #v0.3.1: wichtig für self.gl_omxplayer.quit(), um zu verhindern, dass der omxplayer-Unterprozess so gach hängt, dass nicht einmal mehr ein (externer) kill -9 hilft!
+                 self.gl_omxplayer.quit() #v0.3.1: Beißt evtl nicht an... Dann braucht's einen kill -9 (oder so)
+                 elf.gl_omxplayer = None
             except:
-                # Diese Exception tritt z.B. auf, wenn eine ungültige Mediadatei aufgerufen wird
+                # Diese allgemeine Exception tritt auf, wenn z.B. eine ungültige Mediadatei aufgerufen wird
                 print('Fehler beim Laden der Datei ' + file)
+                time.sleep(0.05) #v0.3.1: wichtig für self.gl_omxplayer.quit(), um zu verhindern, dass der omxplayer-Unterprozess so gach hängt, dass nicht einmal mehr ein (externer) kill -9 hilft!
+                self.gl_omxplayer.quit()
                 self.gl_omxplayer = None
             if self.gl_omxplayer is None:
                 playing = False
@@ -580,7 +590,6 @@ class YAMuPlay(object):
         while self.gl_omxplayerListindex >= 0 and self.gl_quit == 0:
             print()
             print('Titel ' + str(self.gl_omxplayerListindex) + ': "' + self.lstPlaylist.get(self.gl_omxplayerListindex) + '"')
-            #self.omxplayerRestart(self.gl_MediaDir + self.GL_PATHSEPARATOR + self.lstPlaylist.get(self.gl_omxplayerListindex)) 
             self.omxplayerRestart(self.lstPlaylist.get(self.gl_omxplayerListindex)) # 2017-08-14 schlizbaeda V0.2: In der aktiven Playlist steht ab jetzt immer der KOMPLETTE Pfad (inkl. self.gl_MediaDir "/media/pi") drin!
             playing = True
             while playing == True and self.gl_quit == 0:
@@ -589,14 +598,14 @@ class YAMuPlay(object):
                 except:
                     pass
                 time.sleep(0.05)
-                try:
-                    if self.gl_omxplayer is None:
-                        playing = False
-                    else:    
+                if self.gl_omxplayer is None:
+                    playing = False
+                else:    
+                    try:
                         txt = str(self.gl_omxplayer.playback_status())
-                        playing = txt == 'Playing' or txt == 'Paused'
-                except:
-                    playing = True
+                    except:
+                        txt = 'None'
+                    playing = txt == 'Playing' or txt == 'Paused'
             # Nächsten Eintrag aus der Playlist holen:
             self.lstPlaylist.select_clear(0, tkinter.END) # alle Markierungen löschen
             if self.gl_omxplayerPrevevent == True:
@@ -614,9 +623,13 @@ class YAMuPlay(object):
         # Wenn das Programm hierher kommt, wurde die Playlist komplett abgespielt:
         self.gl_omxplayerStopevent = False # Merker für Stoptaste zurücksetzen
         self.gl_omxplayerPrevevent = False # Merker für |<<-Taste zurücksetzen
+        time.sleep(0.05) #v0.3.1: wichtig für self.gl_omxplayer.quit(), um zu verhindern, dass der omxplayer-Unterprozess so gach hängt, dass nicht einmal mehr ein (externer) kill -9 hilft!
         if not self.gl_omxplayer is None:
             # Dieser if-Zweig wird nur ausgeführt, wenn diese def-Funktion aufgerufen wurde und die Playlist leer ist.
-            self.gl_omxplayer.quit()
+            try: #v0.3.1: Hier kann es beim Schließen des Programms zu einem "AttributeError" kommen, wenn noch eine Playlist läuft
+                self.gl_omxplayer.quit()
+            except AttributeError:
+                pass
             self.gl_omxplayer = None
         self.updateButPlayPause() # Wenn die Playlist zu Ende ist, muss die Schaltfläche butPlayPause aktualisiert werden
 
@@ -624,16 +637,16 @@ class YAMuPlay(object):
     # Hilfsfunktionen, da sich in künftigen Versionen des Moduls python-omxplayer-wrapper die folgenden Methoden ändern werden:
     #if self.gl_omxplayer._get_properties_interface().ResWidth() + self.gl_omxplayer._get_properties_interface().ResHeight() + self.gl_omxplayer._get_properties_interface().Aspect() > 0.0: # # 2017-09-20 schlizbaeda V0.2.1: inoffizielle Methoden ._get_properties_interface().*() durch offizielle Methoden .*() ersetzt, damit yamuplay.py auch bei Updates von willprice/python-omxplayer-wrapper weiterhin funktioniert...
     def gl_omxplayer_GetAspect(self):
-        return self.gl_omxplayer._get_properties_interface().Aspect()    # inoffizielle Methode bis python-omxplayer-wrapper V0.2.3-py3.5		
-        #return self.gl_omxplayer.aspect_ratio()                         # offizielle Methode für künftige Versionen von python-omxplayer-wrapper
+        #return self.gl_omxplayer._get_properties_interface().Aspect()    # inoffizielle Methode bis python-omxplayer-wrapper V0.2.3-py3.5		
+        return self.gl_omxplayer.aspect_ratio()                         # offizielle Methode für künftige Versionen von python-omxplayer-wrapper
 
     def gl_omxplayer_GetHeight(self):                            
-        return self.gl_omxplayer._get_properties_interface().ResHeight() # inoffizielle Methode bis python-omxplayer-wrapper V0.2.3-py3.5
-        #return self.gl_omxplayer.height()                               # offizielle Methode für künftige Versionen von python-omxplayer-wrapper
+        #return self.gl_omxplayer._get_properties_interface().ResHeight() # inoffizielle Methode bis python-omxplayer-wrapper V0.2.3-py3.5
+        return self.gl_omxplayer.height()                               # offizielle Methode für künftige Versionen von python-omxplayer-wrapper
 		
     def gl_omxplayer_GetWidth(self):
-        return self.gl_omxplayer._get_properties_interface().ResWidth()  # inoffizielle Methode bis python-omxplayer-wrapper V0.2.3-py3.5
-        #return self.gl_omxplayer.width()                                # offizielle Methode für künftige Versionen von python-omxplayer-wrapper
+        #return self.gl_omxplayer._get_properties_interface().ResWidth()  # inoffizielle Methode bis python-omxplayer-wrapper V0.2.3-py3.5
+        return self.gl_omxplayer.width()                                # offizielle Methode für künftige Versionen von python-omxplayer-wrapper
         
 
     ##### Ereignishandler für omxplayer-Steuerung #####
@@ -1422,7 +1435,6 @@ class YAMuPlay(object):
             self.gl_omxplayer.stop()          # beendet die Wiedergabe des aktuellen Titels
             time.sleep(0.5)                   # TODO: Prüfen, ob diese Zeit mit FullHD-Video am RPi1 auch ausreichend ist...
             self.gl_omxplayer.quit()          # Sauberes Beenden der noch vorhandenen omxplayer-Instanz beim Programmende
-            self.gl_omxplayer = None
     
     # Programm über WM_DELETE_WINDOW beenden (z.B. durch Alt+F4 in der GUI oder Anklicken der Beenden-Schaltfläche mit dem "X"):
     def onClosing(self):
