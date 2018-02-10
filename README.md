@@ -1,7 +1,7 @@
 # yamuplay
-YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.3.1
+YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.3.2
 
-## Hinweis zur aktuellen Version V0.3.1
+## Hinweis zur aktuellen Version V0.3.2
 YAMuPlay nutzt folgende externe Module:
 * python3-dbus, V1.2.4
 * https://github.com/willprice/python-omxplayer-wrapper.git, V0.2.4
@@ -65,8 +65,8 @@ Eine ausführliche Anleitung befindet sich in [`latex/YAMuPlay.pdf`](https://git
 
 Beim Start von `./yamuplay.py` im Terminalfenster erscheint im Terminal folgende Kurzanleitung:
 ```shell
-YAMuPlay V0.3.1
-Yet Another Music Player -- Version 0.3.1
+YAMuPlay V0.3.2
+Yet Another Music Player -- Version 0.3.2
 
 Aufruf:
 yamuplay.py [Parameter] [Mediadatei(en)]
@@ -178,6 +178,11 @@ Bugfix:
   mit wirklich kurzen Sleeps brachte Erfolg. Der genaue Grund ist unbekannt.
   Wahrscheinlich waren es DBus-Hänger...
 
+09.02.2018:
+yamuplay V0.3.2:
+Bugfix:
+Beim Schließen des Videofensters wird sofort eine neue Instanz erstellt.
+Damit werden etliche Folgefehler von vorneherein verhindert!
   
 ## TODO's:
 Ich plane, folgende Punkte in einer künftigen Version einzubauen:

@@ -89,7 +89,7 @@ class YAMuPlay(object):
     def __init__(self, mediapath = '/media/pi'): # TODO: Unterscheidung wheezy (/media) und jessie (/media/pi)     
         # globale Variablen mit Vorbelegung:
         self.gl_appName = 'YAMuPlay'
-        self.gl_appVer = '0.3.1'
+        self.gl_appVer = '0.3.2'
         
         self.GL_PATHSEPARATOR = '/'          # TODO: os.path.sep() liefert das Pfad-Trennzeichen, unter LINUX '/'
         self.gl_MediaDir = mediapath
@@ -208,12 +208,9 @@ class YAMuPlay(object):
         l = int(self.YAMuPlayGUI.winfo_screenwidth() / 4)      # rechts #int((self.YAMuPlayGUI.winfo_screenwidth() - w) / 2)
         t = int(self.YAMuPlayGUI.winfo_screenheight() / 8)     # mittig #int((self.YAMuPlayGUI.winfo_screenheight() - h) / 2)
         #TODO: Einlesen der Fensterkoordinaten aus einer config-Datei...
-        #TODO: #w = 240
-        #TODO: #h = 160
-        #TODO: #l = 1580
-        #TODO: #t = 720
-        w = 940
-        h = 360
+        #      Diese Werte sind klein genug, um auf dem original "RaspiDisplay" (7", 800x480 Pixel) der Foundation Platz zu haben
+        w = 720
+        h = 400
         geometry = str(w) + 'x' + str(h) + '+' + str(l) + '+' + str(t) # sowas im Format wie '1280x720+0+0'
         self.YAMuPlayGUI.geometry(geometry)
         fontsize = 12
@@ -295,7 +292,7 @@ class YAMuPlay(object):
         # rechte Seite von pwMainpane:
         # Listbox-Steuerelement mit Playlist und Schaltflächen für den Mediaplayer
         #   Zeile 1: Schaltflächen für den Mediaplayer (Play/Pause, seek, prev, next, Stop)
-        #   zeile 2: Transparenz (alpha-Wert)
+        #   Zeile 2: Transparenz (alpha-Wert)
         #   Zeile 3: Fortschrittsbalken für aktive Mediendatei
         #   Zeile 4: Listbox-Steuerelement (Playlist), Schaltflächen für "Verschieben" + "Entfernen"
         self.pwPlayer = tkinter.PanedWindow(self.pwMainpane, orient = 'vertical', sashwidth = 0) # sashwidth=0: Breite der Trennlinie auf 0 setzen, damit sie nicht verschoben werden kann
@@ -363,20 +360,7 @@ class YAMuPlay(object):
         self.pwMainpane.add(self.pwPlayer)
         
         # zweites tkinter-Toplevel-Fenster
-        self.Videobox = tkinter.Toplevel()
-        #self.Videobox.geometry('400x400')
-        #self.Videobox.rowconfigure(0, weight = 1)
-        #self.Videobox.columnconfigure(0, weight = 1)
-        #self.VideoboxFrame = tkinter.Button(self.Videobox, text='Button')
-        #self.VideoboxFrame = tkinter.Frame(self.Videobox)#, text='Button')
-        #self.VideoboxFrame.grid(row = 0, column = 0, sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W)
-        self.Videobox.geometry('320x200+80+40') # 2017-08-14 schlizbaeda V0.2: Standardabmessungen für Kommandozeilenparameter "-k <True>"
-        self.Videobox.withdraw()                # Toplevel-Widget unsichtbar machen
-        if self.gl_VideoboxBackcolor:           # 2017-08-14 schlizbaeda V0.2: Hintergrundfarbe einstellen
-            try:
-                self.Videobox.configure(background=self.gl_VideoboxBackcolor) 
-            except:
-                pass # Wenn die angegebene Farbbezeichnung ungültig ist, einfach nichts tun!
+        self.createVideobox()
 
         # 2017-08-14 schlizbaeda V0.2: Die als Kommandozeilenparameter angegebenen Dateien in die Playlist einfügen:
         for arg in self.gl_argvFilenames:
@@ -390,8 +374,22 @@ class YAMuPlay(object):
                 if arg[0:len(self.GL_PATHSEPARATOR)] != self.GL_PATHSEPARATOR: # relativer Pfad
                     arg = os.getcwd() + self.GL_PATHSEPARATOR + arg # relative Pfadangabe mit dem "current working directory" absolut machen
                 self.lstPlaylist.insert(tkinter.END, arg)
-        
-        
+
+    def createVideobox(self):
+        self.Videobox = tkinter.Toplevel()
+        self.Videobox.geometry('320x200+80+40') # 2017-08-14 schlizbaeda V0.2: Standardabmessungen für Kommandozeilenparameter "-k <True>"
+        self.Videobox.withdraw()                # Toplevel-Widget unsichtbar machen
+        if self.gl_VideoboxBackcolor:           # 2017-08-14 schlizbaeda V0.2: Hintergrundfarbe einstellen
+            try:
+                self.Videobox.configure(background=self.gl_VideoboxBackcolor) 
+            except:
+                pass # Wenn die angegebene Farbbezeichnung ungültig ist, einfach nichts tun!
+        # Toplevel-Widget (zusätzliches tkinter-Fenster) für die Anzeige des Videos:
+        self.Videobox.bind('<Destroy>', self.Videobox_Destroy)
+        self.Videobox.bind('<KeyPress>', self.Videobox_KeyPress) 
+        self.Videobox.bind('<Configure>', self.Videobox_Configure) 
+
+
     ##### Funktionen für omxplayer-Aufruf #####
     def omxplayerDebugPrint(self):
         """
@@ -421,7 +419,6 @@ class YAMuPlay(object):
             print('    S c r e e n  geometry=' + str(self.YAMuPlayGUI.winfo_screenwidth()) + 'x' + str(self.YAMuPlayGUI.winfo_screenheight()))
             print('    YAMuPlayGUI  geometry=' + str(self.YAMuPlayGUI.winfo_geometry()))
             print('    Videobox     geometry=' + str(self.Videobox.winfo_geometry()))
-            #print('    VideoboxFra  geometry=' + str(self.VideoboxFrame.winfo_geometry())) # NOGO!
             if not self.gl_omxplayer is None:
                 ## "Einfache Variante": Direkte Funktionsaufrufe aus willprice/python-omxplayer-wrapper/omxplayer/player.py
                 #print('    gl_omxplayer.can_quit=' + str(self.gl_omxplayer.can_quit()))
@@ -1381,6 +1378,26 @@ class YAMuPlay(object):
                 self.mnuViewAspectMode_Click()
         #print(msg)
 
+    def Videobox_Destroy(self, event):
+        # v0.3.2: Dieser Ereignishandler fängt eine Menge Folgefehler ab, weil das Fenster "Videobox" geschlossen wird und deshalb nicht mehr existiert
+        if not self.gl_omxplayer is None:
+            # omxplayer läuft:
+            self.gl_omxplayer.set_video_pos(0, 0, 0, 0)    # omxplayer-Video als Vollbild darstellen
+            # WICHTIG: resultierendes Vollbild nur halb transparent darstellen, da das Schließen der Videobox mitunter unbeabsichtigt geschieht!
+            try:
+                alpha = int(self.spinAlpha.get())
+            except:
+                alpha = self.gl_alphaDefault
+            if alpha > 255:
+                alpha = 255
+            elif alpha < 0:
+                alpha = 0
+            self.spinAlpha.delete(0, tkinter.END) # Aktuelle Belegung löschen
+            self.spinAlpha.insert(0, alpha if alpha < self.gl_alphaDefault else self.gl_alphaDefault) # und aktuellen Wert eintragen
+            self.spinAlpha_command()              # Alpha-Wert aktualisieren
+        # ...und für den nächsten Titel sofort wieder eine neue Instanz des Videobox-Fensters erstellen:
+        self.createVideobox()
+
     def Videobox_KeyPress(self, event):
         # 2016-11-20 schlizbaeda V0.2: Globales "KeyPress"-Ereignis für allgemeine Steuerung über die Tastatur
         #   F9: Alpha-Wert (Transparenz) auf Default-Wert setzen
@@ -1402,13 +1419,12 @@ class YAMuPlay(object):
                 #self.spinAlpha.focus_force()                   # setzt den Eingabefokus auf das spinAlpha-Widget. Dies wird jedoch auf http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/universal.html NICHT empfohlen: ("This is impolite.")
             elif event.keysym == 'F10':
                 # optimale Fenstergröße anhand der Videogröße ermitteln:
-                print('TODO: Vidoebox: F10')
+                print('TODO: Videobox: F10')
             elif event.keysym == 'F11':
                 # F11 ist auch im VLC-Player die Taste für den Wechsel Fensteransicht/Vollbild
                 self.mnuViewFullscreen_Click()
             elif event.keysym == 'F12':
                 self.mnuViewAspectMode_Click()
-        #print(msg)
 
     def Videobox_Configure(self, event):
         # 2016-11-20 schlizbaeda V0.2: Das Toplevel-Widget Videobox wurde in der Größe verändert
@@ -1458,7 +1474,6 @@ class YAMuPlay(object):
     def do_nothing(self):
         self.YAMuPlayGUI.after(200, self.do_nothing)
 
-
     def run(self):
         # Verzeichnis /media einlesen:
         #print('USB-Laufwerke beim Start:')
@@ -1501,9 +1516,6 @@ class YAMuPlay(object):
         self.butNext.bind('<Button-1>', self.butNext_Click)
         self.butStop.bind('<Button-1>', self.butStop_Click)
         self.spinAlpha.bind('<KeyRelease>', self.spinAlpha_KeyRelease) # 2016-11-20 schlizbaeda V0.2: Ereignis für Änderung des Alpha-Wertes (Transparenz)
-        # Toplevel-Widget (zusätzliches tkinter-Fenster) für die Anzeige des Videos:
-        self.Videobox.bind('<KeyPress>', self.Videobox_KeyPress) 
-        self.Videobox.bind('<Configure>', self.Videobox_Configure) 
 
         # Ereignishandler für Strg+C, "kill <Prozess-ID>" und Programmende (Alt+F4) einrichten:
         self.YAMuPlayGUI.protocol('WM_DELETE_WINDOW', self.onClosing) # normales Programmende
@@ -1538,6 +1550,5 @@ class YAMuPlay(object):
 
 if __name__ == '__main__':
     tkinter_app = YAMuPlay().run()
-
 
 #EOF
