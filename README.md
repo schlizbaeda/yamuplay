@@ -47,6 +47,19 @@ python-omxplayer-wrapper V0.2.4 (LGPL v3)
 cd /home/pi/yamuplay/python-omxplayer-wrapper
 sudo python3 setup.py install
 ```
+Derzeit (vermutlich mit V0.2.4) schlägt Murphy wieder zu und stellt ein paar Bugs rein:
+Bei der Installation meldet `sudo python3 setup.py install` folgende Fehlermeldungen:
+```shell
+ImportError: No module named 'decorator'
+ImportError: No module named 'evento'
+```
+Vor `sudo python3 setup.py install` sind deshalb folgende Kommandos abzusetzen:
+```shell
+sudo python3 -m pip install decorator
+sudo python3 -m pip install evento
+```
+Då håd si da Murphy ned schwoam låssn... (Hier lässt sich Herr Murphy nichts nachsagen...)
+
 
 pyudev V0.21.0 (LGPL v2.1)
 ```shell
