@@ -1,12 +1,12 @@
 # yamuplay
-YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.3.2
+YAMuPlay -- Yet Another MUsic PLAYer -- Version 0.4.0
 
-## Hinweis zur aktuellen Version V0.3.2
+## Hinweis zur aktuellen Version V0.4.0
 YAMuPlay nutzt folgende externe Module:
-* python3-dbus, V1.2.4
-* https://github.com/willprice/python-omxplayer-wrapper.git, V0.2.4
-* https://github.com/pyudev/pyudev.git, V0.21.0
-* https://github.com/ahupp/python-magic.git, V0.4.13
+* python3-dbus, V1.2.4-1
+* https://github.com/pyudev/pyudev.git, V0.21.0.dev20181104
+* https://github.com/willprice/python-omxplayer-wrapper.git, V0.3.1
+* https://github.com/ahupp/python-magic.git, V0.4.16
 
 Da es in der Vergangenheit immer wieder zu Kompatibilitätsproblemen kam,
 wenn die jeweils neueste Programmversion der verwendeten Python-Module 
@@ -19,58 +19,29 @@ Bei größeren Versionssprüngen von YAMuPlay werden künftig vor den
 Änderungen die dann aktuellen Versionsstände der benötigten externen 
 Module eingebunden.
 
-Der Grund für diese Maßnahme ist eine Vereinfachung für den Anwender. 
-Ein simpler Download mit
-```shell
-git clone https://github.com/schlizbaeda/yamuplay.git
-```
-und Durchführung der Installation nach der hier beschriebenen 
-Vorgehensweise sollte dann prinzipiell immer funktionieren.
+Der Grund für diese Maßnahme ist eine Vereinfachung für den Anwender.
 
 ## Download und Installation inklusive aller Module und Bibliotheken
-yamuplay (GPL v3)
 ```shell
-cd /home/pi
 git clone https://github.com/schlizbaeda/yamuplay.git
 cd yamuplay
-chmod 755 yamuplay.py
+./yamuplay-setup.sh
 ```
+Das bash-Script `yamuplay-setup.sh` sollte prinzipiell eine problemlose
+Inbetriebnahme ermöglichen. Alle zu installierenden Zusatzpakete sind
+in diesem Script enthalten.
 
-python3-dbus V1.2.4 (MIT)
+Beim Modul `python-omxplayer-wrapper` fehlen immer wieder einzelne
+benötigte Untermodule:
 ```shell
-cd /home/pi/yamuplay
-sudo apt-get install python3-dbus
+v0.2.4: ImportError: No module named 'decorator'
+v0.2.4: ImportError: No module named 'evento'
+v0.3.1: ImportError: No module named 'mock'
 ```
-
-python-omxplayer-wrapper V0.2.4 (LGPL v3)
-```shell
-cd /home/pi/yamuplay/python-omxplayer-wrapper
-sudo python3 setup.py install
-```
-Derzeit (vermutlich mit V0.2.4) schlägt Murphy wieder zu und stellt ein paar Bugs rein:
-Bei der Installation meldet `sudo python3 setup.py install` folgende Fehlermeldungen:
-```shell
-ImportError: No module named 'decorator'
-ImportError: No module named 'evento'
-```
-Vor `sudo python3 setup.py install` sind deshalb folgende Kommandos abzusetzen:
+Im Installationsscript `yamuplay-setup.sh` ist für V0.4.0 deshalb 
+die folgende Zeile enthalten:
 ```shell
 sudo python3 -m pip install decorator
-sudo python3 -m pip install evento
-```
-Då håd si da Murphy ned schwoam låssn... (Hier lässt sich Herr Murphy nichts nachsagen...)
-
-
-pyudev V0.21.0 (LGPL v2.1)
-```shell
-cd /home/pi/yamuplay/pyudev
-sudo python3 setup.py install
-```
-
-python-magic V0.4.13 (MIT)
-```shell
-cd /home/pi/yamuplay/python-magic
-sudo python3 setup.py install
 ```
 
 ## Anleitung
@@ -78,8 +49,8 @@ Eine ausführliche Anleitung befindet sich in [`latex/YAMuPlay.pdf`](https://git
 
 Beim Start von `./yamuplay.py` im Terminalfenster erscheint im Terminal folgende Kurzanleitung:
 ```shell
-YAMuPlay V0.3.2
-Yet Another Music Player -- Version 0.3.2
+YAMuPlay V0.4.0
+Yet Another Music Player -- Version 0.4.0
 
 Aufruf:
 yamuplay.py [Parameter] [Mediadatei(en)]
@@ -99,7 +70,7 @@ Parameter:
   -a letterbox Vollständige Skalierung in das Videofenster ohne Verzerrung.
                Es entstehen Ränder an der zu großen Seite
   -a fill      Skalierung in das Videofenster auf die kleinere Kante.
-               Zu große Bereiche werden abgeschnitten und sind unsichtbar.
+               zu große Bereiche werden abgeschnitten und sind unsichtbar.
   -a stretch:  Anpassung an die Fenstergröße mit Verzerrung
 
   -k <bool>    "keep video size"
@@ -130,18 +101,30 @@ Parameter:
                --> Dies scheint offenbar bei mehreren Fernsehern so zu sein...
                    again what learned: Kein Schaden ohne Nutzen :-)
 
+  -v           Ausführlichkeitsstufe (verbosity) der Konsolenausgaben (Flags):
+               2^0 =   1: ERROR     Fehler ausgeben
+               2^1 =   2: WARNING   Warnungen ausgeben
+               2^2 =   4: HELP      Hilfetext beim Programmstart ausgeben
+               2^3 =   8: NORMAL    aktuelle Aktion bzw. GUI-Ereignis ausgeben
+               2^4 =  16: USB       USB-Ereignisse ausgeben
+               2^5 =  32: OMXPLAYER Kommandos für den omxplayer ausgeben
+               2^6 =  64: RECEIVE   Rückgabewerte vom omxplayer ausgeben
+               2^7 = 128: DEBUG     Debugmeldungen ausgeben
+
+
 Tastaturbelegung:
   F1:    Anzeige einer Aboutbox (Menüpunkt Hilfe-->Info)
   F2:    Debugausgabe im Konsolenfenster: def omxplayerDebugPrint(self):
   F3:    Dateisuche
-  F5:    Playlist aktualisieren (laufenden Titel auswählen)
+  F5:    Playlist aktualisieren (laufenden Titel auswählen) und bereinigen
   F9:    Transparenz auf Defaultwert setzen (Kommandozeilenparameter -alpha)
-  F10:   Öffnen des Menüs (offenbar ein internes TKinter-Feature) 
+  F10:   Öffnen des Menüs (offenbar ein internes TKinter-Feature)
   F11:   Wechsel zwischen Videoanzeige im Fenster und Vollbild
   F12:   Wechsel der "aspect modes": letterbox, fill, stretch
   DEL:   Löschen des markierten Titels aus der Playlist
+  SPACE: Play/Pause
 
-Copyright (C) 2016 - 2018 by schlizbaeda (GNU GPL v3)
+Copyright (C) 2016 - 2018 by schlizbaeda (GNU GPL v/3)
 ```
 
 ## Historie:
@@ -196,15 +179,31 @@ yamuplay V0.3.2:
 Bugfix:
 Beim Schließen des Videofensters wird sofort eine neue Instanz erstellt.
 Damit werden etliche Folgefehler von vorneherein verhindert!
+
+05.11.2018:
+yamuplay V0.4.0:
+* Grafikdatei `yamuplay.png` als Icon eingebunden (Danke an @hyle aus dem RPi-Forum)
+* Verbosity für Terminalausgaben einstellbar
+* Menüpunkte bei "Ansicht" mit Anzeige des aktuellen Status
+* Aboutbox (F1) als nicht-modales Fenster umgesetzt
+* Mediadateien laden: neuer Menüpunkt, Kommandozeilenparameter mit Autoplay
+* Taste F5: Aktualisierung und Bereinigung der Playlist
+* Leertaste: Play/Pause
+* Drag+Drop von Directorys: Alle Dateien rekursiv in die Playlist einfügen
+* Transparenz von Videos für leichtere Bedienung aktivieren (FocusIn/FocusOut)
+
   
 ## TODO's:
 Ich plane, folgende Punkte in einer künftigen Version einzubauen:
 * Fortschrittsbalken für aktuellen Titel aktivieren
+* Playlist-Modi: "normal" (jetzt implementiert), Random, Loop, Loop1
 * Anzeige von Titelnummer und aktueller Laufzeit (wie beim echten CD-Spieler)
-* Lautstärke über omxplayer einstellen --> ab v0.2.2 über ALSA gelöst
-* omxplayer-eigenes Fading beseitigen (falls möglich) --> in den neuen Versionen nicht mehr vorhanden
 * Erkennung anderer USB-Gerätetypen (z.B. Smartphones) , nicht nur klassische Speichergeräte (mass storage device)
 * Einlesevorgang bei riesigen USB-Speichern optimieren (Hintergrundthread?)
 * Bilder (*.JPG, *.PNG etc.) in Form einer Diashow anzeigen
 * Bluetooth-Empfang von Smartphones, um Spotify-Musik abspielen zu können
-* Ergänzend alle offenen Punkte aus der LaTeX-Dokumentation (Kapitel 2.3)
+* Die <ENTER>-Taste soll einem Doppelklick auf den Listeneintrag entsprechen
+* Wischgesten für Scrolling
+* Bedienung und evtl. Textdisplay über die GPIOs
+* "Skins": 1. grafische Aufbereitung für Kinder 2. im Auto (keine Videos während Fahrt?)
+* Einstellungen in INI-Datei speichern
