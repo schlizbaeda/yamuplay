@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-
+from pathlib import Path
 from time import sleep
 import os
 import dbus
 
 import unittest
+
+from mock import Mock
 
 from omxplayer import OMXPlayer, keys
 
@@ -13,16 +15,62 @@ _TIME_DP=0
 _RATE_DP=2
 _VOLUME_DP=3
 
+MEDIA_ROOT = Path(os.path.abspath(os.path.dirname(__file__))) / '../media/'
+MEDIA_FILE_PATH = MEDIA_ROOT / 'test_media_1.mp4'
+MEDIA_2_SECOND_FILE_PATH = MEDIA_ROOT / 'test_media_2_second.mp4'
+
 
 class OMXPlayerTest(unittest.TestCase):
-    MEDIA_FILE_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../media/test_media_1.mp4')
-
     def setUp(self):
-        self.player = OMXPlayer(self.MEDIA_FILE_PATH)
-        sleep(1) # Give the player time to start up
+        self.player = OMXPlayer(MEDIA_FILE_PATH)
+        sleep(1)  # Give the player time to start up
 
     def tearDown(self):
         self.player.quit()
+
+
+class OMXPlayerSetupTests(unittest.TestCase):
+
+    def test_args_list_constructor(self):
+        player = OMXPlayer(MEDIA_FILE_PATH, args=['--layer', '2', '--orientation', '90'])
+        sleep(1)
+        player.quit()
+
+    def test_args_str_constructor(self):
+        player = OMXPlayer(MEDIA_FILE_PATH, args='--layer 2 --orientation 90')
+        sleep(1)
+        player.quit()
+
+    def test_str_media_file_path(self):
+        player = OMXPlayer(str(MEDIA_FILE_PATH))
+        sleep(1)
+        player.quit()
+
+    def test_load(self):
+        player = OMXPlayer(MEDIA_FILE_PATH)
+        sleep(1)
+        player.load(MEDIA_FILE_PATH)
+        sleep(1)
+        player.quit()
+
+    def test_exit_event_on_quit(self):
+        player = OMXPlayer(MEDIA_FILE_PATH)
+        exit_fn = Mock()
+        player.exitEvent += exit_fn
+        sleep(1)
+
+        player.quit()
+
+        exit_fn.assert_called_once_with(player, -15)
+
+    def test_exit_event_on_video_end(self):
+        player = OMXPlayer(MEDIA_2_SECOND_FILE_PATH)
+        exit_fn = Mock()
+        player.exitEvent += exit_fn
+
+        sleep(3)
+
+        exit_fn.assert_called_once_with(player, 0)
 
 
 class OMXPlayerRootInterfacePropertiesTest(OMXPlayerTest):
@@ -103,7 +151,7 @@ class OMXPlayerPlayerInterfacePropertiesTest(OMXPlayerTest):
     def test_metadata(self):
         expectedMetadata = {
             'mpris:length': 19691000,
-            'xesam:url': 'file://' + os.path.abspath(self.MEDIA_FILE_PATH)
+            'xesam:url': 'file://' + os.path.abspath(MEDIA_FILE_PATH)
         }
         self.assertEqual(expectedMetadata, self.player.metadata())
 

@@ -1,12 +1,19 @@
 #!/bin/sh
 
-set -e
+set -e;
 
 # ensure we can use unicode filenames in the test
 export LC_ALL=en_US.UTF-8
 THISDIR=`dirname $0`
 export PYTHONPATH=${THISDIR}/..
 
-python2.6 ${THISDIR}/test.py
-python2.7 ${THISDIR}/test.py
-python3 ${THISDIR}/test.py
+PYTHONS="python2.7 python3.5"
+
+for pyver in $PYTHONS; do
+    if which $pyver > /dev/null; then
+        echo "found $pyver"
+        $pyver ${THISDIR}/test.py
+    else
+        echo "version $pyver not found"
+    fi
+done

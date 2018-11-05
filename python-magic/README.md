@@ -41,6 +41,10 @@ You can also combine the flag options:
 'text/plain'
 ```
 
+## Versioning
+
+Minor version bumps should be backwards compatible.  Major bumps are not.
+
 ## Name Conflict
 
 There are, sadly, two libraries which use the module name `magic`.  Both have been around for quite a while.If you are using this module and get an error using a method like `open`, your code is expecting the other one.  Hopefully one day these will be reconciled.
@@ -55,11 +59,18 @@ Other sources:
 - pypi: http://pypi.python.org/pypi/python-magic/
 - github: https://github.com/ahupp/python-magic
 
-### Dependencies
+### Windows
 
-On Windows, copy magic1.dll, regex2.dll, and zlib1.dll onto your PATH from the Binaries and Dependencies zipfiles provided by the [File for Windows](http://gnuwin32.sourceforge.net/packages/file.htm) project.  You will need to copy the file `magic` out of `[binary-zip]\share\misc`, and pass it's location to `Magic(magic_file=...)`.  If you are using a 64-bit build of python, you'll need 64-bit libmagic binaries which can be found here: https://github.com/pidydx/libmagicwin64. Newer version can be found here: https://github.com/nscaife/file-windows.
+You'll need DLLs for libmagic.  @julian-r has uploaded a version of this project that includes binaries to pypi:
+https://pypi.python.org/pypi/python-magic-bin/0.4.14
 
-On OSX:
+Other sources of the libraries in the past have been [File for Windows](http://gnuwin32.sourceforge.net/packages/file.htm) .  You will need to copy the file `magic` out of `[binary-zip]\share\misc`, and pass its location to `Magic(magic_file=...)`.  
+
+If you are using a 64-bit build of python, you'll need 64-bit libmagic binaries which can be found here: https://github.com/pidydx/libmagicwin64. Newer version can be found here: https://github.com/nscaife/file-windows.
+
+
+
+### OSX
 
 - When using Homebrew: `brew install libmagic`
 - When using macports: `port install file`
@@ -106,4 +117,5 @@ Thanks to these folks on github who submitted features and bugfixes.
 python-magic is distributed under the MIT license.  See the included
 LICENSE file for details.
 
+I am providing code in the repository to you under an open source license. Because this is my personal repository, the license you receive to my code is from me and not my employer (Facebook)
 

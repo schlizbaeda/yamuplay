@@ -4,11 +4,19 @@ import os
 import signal
 import logging
 import threading
-import math
+import atexit
 import sys
-try: # python2
+
+from mock import Mock
+
+try:  # python 3
+    from pathlib import Path
+except ImportError:  # python2
+    from pathlib2 import Path
+
+try:  # python2
     from urlparse import urlsplit
-except ImportError: # python3
+except ImportError:  # python3
     from urllib.parse import urlsplit
 
 if sys.version_info > (3,):
@@ -24,14 +32,16 @@ from omxplayer.dbus_connection import DBusConnection, \
 
 from evento import Event
 
-#### CONSTANTS ####
+
+# CONSTANTS
+
 RETRY_DELAY = 0.05
 
 
-#### FILE GLOBAL OBJECTS ####
+# FILE GLOBAL OBJECTS
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
-
 
 
 def _check_player_is_active(fn):
@@ -49,6 +59,7 @@ def _check_player_is_active(fn):
 
     return decorator(wrapped, fn)
 
+
 def _from_dbus_type(fn):
     def from_dbus_type(dbusVal):
         def from_dbus_dict(dbusDict):
@@ -65,7 +76,6 @@ def _from_dbus_type(fn):
             dbus.types.Byte: int,
             dbus.types.Int16: int,
             dbus.types.Int32: int,
-            dbus.types.UInt32: int,
             dbus.types.Int64: int,
             dbus.types.UInt32: int,
             dbus.types.UInt64: int,
@@ -84,7 +94,10 @@ def _from_dbus_type(fn):
 
     return decorator(wrapped, fn)
 
-#### CLASSES ####
+
+# CLASSES
+
+
 class FileNotFoundError(Exception):
     pass
 
@@ -101,25 +114,32 @@ class OMXPlayer(object):
 
     Args:
         source (str): Path to the file (as ~/Videos/my-video.mp4) or URL you wish to play
-        args (list): used to pass option parameters to omxplayer.  see: https://github.com/popcornmix/omxplayer#synopsis
+        args (list/str): used to pass option parameters to omxplayer.  see: https://github.com/popcornmix/omxplayer#synopsis
 
 
     Multiple argument example:
 
     >>> OMXPlayer('path.mp4', args=['--no-osd', '--no-keys', '-b'])
-
+    >>> OMXPlayer('path.mp4', args='--no-osd --no-keys -b')
+    >>> OMXPlayer('path.mp4', dbus_name='org.mpris.MediaPlayer2.omxplayer2')
     """
     def __init__(self, source,
-                 args=[],
+                 args=None,
                  bus_address_finder=None,
                  Connection=None,
                  dbus_name=None,
                  pause=False):
         logger.debug('Instantiating OMXPlayer')
 
-        self.args = args
+        if args is None:
+            self.args = []
+        elif isinstance(args, str):
+            import shlex
+            self.args = shlex.split(args)
+        else:
+            self.args = list(map(str, args))
         self._is_playing = True
-        self._source = source
+        self._source = Path(source)
         self._dbus_name = dbus_name
         self._Connection = Connection if Connection else DBusConnection
         self._bus_address_finder = bus_address_finder if bus_address_finder else BusFinder()
@@ -130,6 +150,8 @@ class OMXPlayer(object):
         self.playEvent = Event()
         #: Event called on stop ``callback(player)``
         self.stopEvent = Event()
+        #: Event called on exit ``callback(player, exit_status)``
+        self.exitEvent = Event()
         #: Event called on seek ``callback(player, relative_position)``
         self.seekEvent = Event()
         #: Event called on setting position ``callback(player, absolute_position)``
@@ -144,16 +166,19 @@ class OMXPlayer(object):
             self.quit()
 
         self._process = self._setup_omxplayer_process(source)
+        self._rate = 1.0
+        self._is_muted = False
         self._connection = self._setup_dbus_connection(self._Connection, self._bus_address_finder)
 
     def _run_omxplayer(self, source, devnull):
-        def on_exit():
+        def on_exit(self, exit_status):
             logger.info("OMXPlayer process is dead, all DBus calls from here "
                         "will fail")
+            self.exitEvent(self, exit_status)
 
-        def monitor(process, on_exit):
+        def monitor(self, process, on_exit):
             process.wait()
-            on_exit()
+            on_exit(self, process.returncode)
 
         try:
             source = str(source.resolve())
@@ -163,21 +188,30 @@ class OMXPlayer(object):
         if self._dbus_name:
             command += ['--dbus_name', self._dbus_name]
         logger.debug("Opening omxplayer with the command: %s" % command)
+        # By running os.setsid in the fork-ed process we create a process group
+        # which is used to kill the subprocesses the `omxplayer` script
+        # (it is a bash script itself that calls omxplayer.bin) creates. Without
+        # doing this we end up in a scenario where we kill the shell script, but not
+        # the forked children of the shell script.
+        # See https://pymotw.com/2/subprocess/#process-groups-sessions for examples on this
         process = subprocess.Popen(command,
                                    stdin=devnull,
                                    stdout=devnull,
                                    preexec_fn=os.setsid)
         self._process_monitor = threading.Thread(target=monitor,
-                                                 args=(process, on_exit))
+                                                 args=(self, process, on_exit))
         self._process_monitor.start()
         return process
 
     def _setup_omxplayer_process(self, source):
-            logger.debug('Setting up OMXPlayer process')
-            with open(os.devnull, 'w') as devnull:
-                process = self._run_omxplayer(source, devnull)
-                logger.debug('Process opened with PID %s' % process.pid)
-                return process
+        logger.debug('Setting up OMXPlayer process')
+
+        with open(os.devnull, 'w') as devnull:
+            process = self._run_omxplayer(source, devnull)
+        logger.debug('Process opened with PID %s' % process.pid)
+
+        atexit.register(self.quit)
+        return process
 
     def _setup_dbus_connection(self, Connection, bus_address_finder):
         logger.debug('Trying to connect to OMXPlayer via DBus')
@@ -345,19 +379,23 @@ class OMXPlayer(object):
     def volume(self):
         """
         Returns:
-            float: current volume in millibels
+            float: current player volume
         """
-        vol = self._player_interface_property('Volume')
-        return 2000.0 * math.log(vol, 10)
+        if self._is_muted:
+            return 0
+        return self._player_interface_property('Volume')
 
     @_check_player_is_active
     @_from_dbus_type
     def set_volume(self, volume):
         """
         Args:
-            float: volume in millibels
+            float: volume in the interval [0, 10]
         """
-        return self._player_interface_property('Volume', dbus.Double(10**(volume / 2000.0)))
+        # 0 isn't handled correctly so we have to set it to a very small value to achieve the same purpose
+        if volume == 0:
+            volume = 1e-10
+        return self._player_interface_property('Volume', dbus.Double(volume))
 
     @_check_player_is_active
     @_from_dbus_type
@@ -398,9 +436,9 @@ class OMXPlayer(object):
     def rate(self):
         """
         Returns:
-            float: playback rate, 1 is the normal rate, 0.5 would be half speed and 2 would be double speed.
+            float: playback rate, 1 is the normal rate, 2 would be double speed.
         """
-        return self._player_interface_property('Rate')
+        return self._rate
 
     @_check_player_is_active
     @_from_dbus_type
@@ -414,7 +452,8 @@ class OMXPlayer(object):
             >>> player.set_rate(0.5)
             # Will play half speed
         """
-        return self._player_interface_property('Rate', dbus.Double(rate))
+        self._rate = self._player_interface_property('Rate', dbus.Double(rate))
+        return self._rate
 
     @_check_player_is_active
     @_from_dbus_type
@@ -559,6 +598,7 @@ class OMXPlayer(object):
         """
         Mute audio. If already muted, then this does not do anything
         """
+        self._is_muted = True
         self._player_interface.Mute()
 
     @_check_player_is_active
@@ -566,6 +606,7 @@ class OMXPlayer(object):
         """
         Unmutes the video. If already unmuted, then this does not do anything
         """
+        self._is_muted = False
         self._player_interface.Unmute()
 
 
@@ -799,6 +840,9 @@ class OMXPlayer(object):
         """
         Quit the player, blocking until the process has died
         """
+        if self._process is None:
+            logger.debug('Quit was called after self._process had already been released')
+            return
         try:
             logger.debug('Quitting OMXPlayer')
             process_group_id = os.getpgid(self._process.pid)
@@ -807,8 +851,6 @@ class OMXPlayer(object):
             self._process_monitor.join()
         except OSError:
             logger.error('Could not find the process to kill')
-
-        self._process = None
 
         self._process = None
 
