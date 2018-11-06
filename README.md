@@ -41,7 +41,7 @@ v0.3.1: ImportError: No module named 'mock'
 Im Installationsscript `yamuplay-setup.sh` ist für V0.4.0 deshalb 
 die folgende Zeile enthalten:
 ```shell
-sudo python3 -m pip install decorator
+sudo python3 -m pip install mock
 ```
 
 ## Anleitung
